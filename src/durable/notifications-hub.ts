@@ -1,4 +1,4 @@
-import { DurableObject, waitUntil } from 'cloudflare:workers';
+import { LocalDurableObject as DurableObject, waitUntil } from '../../local/durable';
 import type { Env } from '../types';
 import { notifyMobilePush } from '../services/push-relay';
 
@@ -295,8 +295,13 @@ export class NotificationsHub extends DurableObject<Env> {
       deviceIdentifier: requestDeviceIdentifier,
     } satisfies WsAttachment);
 
+    const isLocalRuntime = typeof (globalThis as { __NODEWARDEN_LOCAL__?: boolean }).__NODEWARDEN_LOCAL__ === 'boolean';
+
     return new Response(null, {
-      status: 101,
+      // Cloudflare Workers accepts status 101 with a webSocket property; the
+      // local runtime (undici Response) does not, so use 200 there instead —
+      // the local HTTP bridge performs the actual upgrade separately.
+      status: isLocalRuntime ? 200 : 101,
       webSocket: client,
     });
   }

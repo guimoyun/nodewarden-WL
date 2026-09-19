@@ -64,3 +64,23 @@ security-audits/
 .mcp.json
 opencode.jsonc
 .cursor/
+
+# NodeWarden Local runtime data
+nw-data/
+data/
+
+# Local build artifacts: keep zips, ignore raw SEA runtimes (oversized)
+dist-local/nodewarden
+dist-local/nodewarden.exe
+dist-local/nodewarden-strip
+dist-local/*.blob
+# Raw SEA runtimes (zips are the distributable form)
+dist-local/nodewarden-linux-x64
+dist-local/nodewarden-linux-arm64
+dist-local/nodewarden-linux-armv7l
+dist-local/nodewarden-linux-armv6l
+dist-local/nodewarden-win-x64.exe
+dist-local/nodewarden-win-arm64.exe
+dist-local/nodewarden-win-x86.exe
+dist-local/nodewarden-macos-x64
+dist-local/nodewarden-macos-arm64

@@ -1,0 +1,5 @@
+{
+  "main": "dist-local/nodewarden.cjs",
+  "output": "dist-local/nodewarden-sea.blob",
+  "disableExperimentalSEAWarning": true
+}
