@@ -84,3 +84,6 @@ dist-local/nodewarden-win-arm64.exe
 dist-local/nodewarden-win-x86.exe
 dist-local/nodewarden-macos-x64
 dist-local/nodewarden-macos-arm64
+
+# Release zips (published via GitHub Releases, not in git)
+dist-local/*.zip
