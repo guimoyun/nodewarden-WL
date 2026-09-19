@@ -1,0 +1,206 @@
+# NodeWarden Local — 手动触发编译并发布到 GitHub Releases
+#
+# 用法：GitHub 仓库页 → Actions → "Build & Release" → Run workflow
+#   （可选填写版本号，如 v1.0.1，默认 v1.0.0-local）
+# 编译完成后自动把 9 个平台的发布包上传到 Releases 下载区。
+#
+# 说明：
+#   - Linux x64 / arm64 / armv7l / armv6l + Windows x64 / arm64 / x86 在 ubuntu 构建
+#   - macOS x64 / arm64 在 macos runner 上用本机 Node 构建并做 ad-hoc 签名
+#   - 所有平台使用 Node v22.23.2（SEA blob 与载体运行时版本必须一致）
+#   - macOS 产物已 ad-hoc 签名，Gatekeeper 仍可能提示，见 README-MACOS.md
+
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release 标签（版本号）"
+        required: false
+        default: "v1.0.0-local"
+
+permissions:
+  contents: write
+
+env:
+  FUSE: NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+
+jobs:
+  build-linux-win:
+    name: Build Linux + Windows (9 → 7 packages)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node (exact v22.23.2)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.23.2"
+
+      - name: Install deps & build Web Vault
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Bundle backend to single CJS
+        run: |
+          npx esbuild local/index.ts --bundle --platform=node --format=cjs --target=node22 \
+            --outfile=dist-local/nodewarden.cjs --external:bufferutil --external:utf-8-validate
+
+      - name: Generate SEA blob
+        run: |
+          printf '{"main":"dist-local/nodewarden.cjs","output":"dist-local/nodewarden-sea.blob","disableExperimentalSEAWarning":true}\n' > dist-local/sea-config.json
+          node --experimental-sea-config dist-local/sea-config.json
+
+      - name: Download runtimes
+        run: |
+          mkdir -p /tmp/rt && cd /tmp/rt
+          base=https://nodejs.org/dist/v22.23.2
+          curl -sL -o lx64.tar.xz $base/node-v22.23.2-linux-x64.tar.xz
+          curl -sL -o larm64.tar.xz $base/node-v22.23.2-linux-arm64.tar.xz
+          curl -sL -o larmv7.tar.xz $base/node-v22.23.2-linux-armv7l.tar.xz
+          curl -sL -o w64.zip $base/node-v22.23.2-win-x64.zip
+          curl -sL -o warm64.zip $base/node-v22.23.2-win-arm64.zip
+          curl -sL -o wx86.zip $base/node-v22.23.2-win-x86.zip
+          curl -sL -o larmv6.tar.gz https://unofficial-builds.nodejs.org/download/release/v22.23.2/node-v22.23.2-linux-armv6l.tar.gz
+          for f in lx64 larm64 larmv7; do tar xf $f.tar.xz; done
+          tar xf larmv6.tar.gz
+          for f in w64 warm64 wx86; do unzip -qo $f.zip; done
+          ls -d node-v22.23.2-*
+
+      - name: Inject SEA blob into runtimes
+        run: |
+          set -e
+          cd dist-local
+          inject() { npx --yes postject "$1" NODE_SEA_BLOB nodewarden-sea.blob --sentinel-fuse "$FUSE" >/dev/null 2>&1 && echo "injected $1" || { echo "FAIL $1"; exit 1; }; }
+          cp /tmp/rt/node-v22.23.2-linux-x64/bin/node nodewarden-linux-x64
+          cp /tmp/rt/node-v22.23.2-linux-arm64/bin/node nodewarden-linux-arm64
+          cp /tmp/rt/node-v22.23.2-linux-armv7l/bin/node nodewarden-linux-armv7l
+          cp /tmp/rt/node-v22.23.2-linux-armv6l/bin/node nodewarden-linux-armv6l
+          cp /tmp/rt/node-v22.23.2-win-x64/node.exe nodewarden-win-x64.exe
+          cp /tmp/rt/node-v22.23.2-win-arm64/node.exe nodewarden-win-arm64.exe
+          cp /tmp/rt/node-v22.23.2-win-x86/node.exe nodewarden-win-x86.exe
+          chmod +x nodewarden-linux-*
+          inject nodewarden-linux-x64
+          inject nodewarden-linux-arm64
+          inject nodewarden-linux-armv7l
+          inject nodewarden-linux-armv6l
+          inject nodewarden-win-x64.exe
+          inject nodewarden-win-arm64.exe
+          inject nodewarden-win-x86.exe
+
+      - name: Package zips (binary + dist + scripts + docs)
+        run: |
+          set -e
+          cd dist-local
+          pkg() { d=/tmp/pkg/$1; rm -rf "$d"; mkdir -p "$d"; cp "$2" "$d/"; cp -r ../dist "$d/dist"; cp ../start.sh ../README-LOCAL.md "$d/"; (cd "$d" && zip -qr "../$1.zip" .); }
+          pkg nodewarden-linux-x64 nodewarden-linux-x64
+          pkg nodewarden-linux-arm64 nodewarden-linux-arm64
+          pkg nodewarden-linux-armv7l nodewarden-linux-armv7l
+          pkg nodewarden-linux-armv6l nodewarden-linux-armv6l
+          pkg nodewarden-win-x64 nodewarden-win-x64.exe
+          pkg nodewarden-win-arm64 nodewarden-win-arm64.exe
+          pkg nodewarden-win-x86 nodewarden-win-x86.exe
+          ls -la nodewarden-*.zip
+
+      - name: Upload artifacts (linux + win)
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-win-zips
+          path: dist-local/nodewarden-*.zip
+          retention-days: 7
+
+  build-macos:
+    name: Build macOS x64 + arm64 (signed)
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - os: macos-13
+            arch: x64
+          - os: macos-14
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node (exact v22.23.2)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.23.2"
+
+      - name: Install deps & build Web Vault
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Bundle backend to single CJS
+        run: |
+          npx esbuild local/index.ts --bundle --platform=node --format=cjs --target=node22 \
+            --outfile=dist-local/nodewarden.cjs --external:bufferutil --external:utf-8-validate
+
+      - name: Generate SEA blob
+        run: |
+          printf '{"main":"dist-local/nodewarden.cjs","output":"dist-local/nodewarden-sea.blob","disableExperimentalSEAWarning":true}\n' > dist-local/sea-config.json
+          node --experimental-sea-config dist-local/sea-config.json
+
+      - name: Inject into runner Node + ad-hoc sign
+        run: |
+          set -e
+          cd dist-local
+          cp "$(command -v node)" nodewarden-macos-${{ matrix.arch }}
+          npx --yes postject nodewarden-macos-${{ matrix.arch }} NODE_SEA_BLOB nodewarden-sea.blob --sentinel-fuse "$FUSE" >/dev/null 2>&1
+          codesign --force --sign - nodewarden-macos-${{ matrix.arch }}
+          echo "signed nodewarden-macos-${{ matrix.arch }}"
+
+      - name: Package zip
+        run: |
+          cd dist-local
+          d=/tmp/pkg/macos-${{ matrix.arch }}; rm -rf "$d"; mkdir -p "$d"
+          cp nodewarden-macos-${{ matrix.arch }} "$d/"
+          cp -r ../dist "$d/dist"
+          cp ../start.sh ../README-MACOS.md "$d/"
+          (cd "$d" && zip -qr "../nodewarden-macos-${{ matrix.arch }}.zip" .)
+
+      - name: Upload artifact (macos)
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}-zip
+          path: dist-local/nodewarden-macos-${{ matrix.arch }}.zip
+          retention-days: 7
+
+  release:
+    name: Publish to GitHub Releases
+    needs: [build-linux-win, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all zips
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la release-artifacts/
+
+      - name: Create/Update Release & upload
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: "NodeWarden Local ${{ github.event.inputs.version }}"
+          body: |
+            ## NodeWarden 本地化可执行版
+
+            Bitwarden 兼容密码库，脱离 Cloudflare 生态，单文件运行，数据全部本地化（SQLite）。
+
+            ### 平台包
+            - **Linux**: x64 / arm64 / armv7l / armv6l（树莓派）
+            - **Windows**: x64 / arm64 / x86
+            - **macOS**: x64（Intel）/ arm64（Apple Silicon，已 ad-hoc 签名）
+
+            ### 使用
+            解压后 `dist/` 与可执行文件放在同一目录，设置 `JWT_SECRET` 后运行，浏览器访问
+            `http://127.0.0.1:8787`。详见仓库内 README-LOCAL.md。
+          files: release-artifacts/*.zip
+          generate_release_notes: false
+          fail_on_unmatched_files: true
