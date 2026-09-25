@@ -1,10 +1,14 @@
 {
-  "name": "nodewarden",
-  "version": "1.8.0",
-  "description": "Minimal Bitwarden-compatible server running on Cloudflare Workers",
-  "author": "shuaiplus",
+  "name": "nodewarden-local",
+  "version": "1.8.0-local",
+  "description": "NodeWarden Local — Bitwarden-compatible password server as a standalone local executable (SQLite, no Cloudflare dependency)",
+  "author": "guimoyun",
   "license": "LGPL-3.0",
   "main": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guimoyun/nodewarden-WL.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "wrangler dev -c wrangler.toml",
@@ -29,7 +33,12 @@
     "vaultwarden",
     "cloudflare",
     "workers",
-    "password-manager"
+    "password-manager",
+    "local",
+    "self-hosted",
+    "sqlite",
+    "standalone",
+    "sea"
   ],
   "cloudflare": {
     "bindings": {
