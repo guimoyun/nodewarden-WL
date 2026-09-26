@@ -24558,7 +24558,8 @@ var SCHEMA_STATEMENTS = [
   "CREATE INDEX IF NOT EXISTS idx_webauthn_challenges_expires ON webauthn_challenges(expires_at)",
   "CREATE INDEX IF NOT EXISTS idx_webauthn_challenges_user_scope ON webauthn_challenges(user_id, scope)",
   "CREATE TABLE IF NOT EXISTS login_attempts_ip (ip TEXT PRIMARY KEY, attempts INTEGER NOT NULL, locked_until INTEGER, updated_at INTEGER NOT NULL)",
-  "CREATE TABLE IF NOT EXISTS used_attachment_download_tokens (jti TEXT PRIMARY KEY, expires_at INTEGER NOT NULL)"
+  "CREATE TABLE IF NOT EXISTS used_attachment_download_tokens (jti TEXT PRIMARY KEY, expires_at INTEGER NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS remote_sync_sources (id TEXT PRIMARY KEY, url TEXT NOT NULL, email TEXT NOT NULL, encrypted_password_hash TEXT NOT NULL, sync_interval_minutes INTEGER NOT NULL DEFAULT 60, enabled INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'idle', last_sync_at TEXT, last_result TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)"
 ];
 async function executeSchemaStatement(db, statement) {
   try {
@@ -26512,7 +26513,7 @@ async function consumeAccountPasskeyChallenge(db, challengeHash, scope, userId, 
 // src/services/storage.ts
 var TWO_FACTOR_REMEMBER_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
 var STORAGE_SCHEMA_VERSION_KEY = "schema.version";
-var STORAGE_SCHEMA_VERSION = "2026-07-13-refresh-session-reuse";
+var STORAGE_SCHEMA_VERSION = "2026-09-27-remote-sync-sources";
 var REQUIRED_SCHEMA_TABLES = ["webauthn_credentials", "webauthn_challenges", "auth_requests", "totp_login_replays"];
 var StorageService = class _StorageService {
   constructor(db) {
@@ -27073,7 +27074,51 @@ var StorageService = class _StorageService {
     }
     return result.consumed;
   }
+  // --- Remote sync sources (admin-managed) ---
+  async listRemoteSyncSources() {
+    const rows = await this.db.prepare("SELECT * FROM remote_sync_sources ORDER BY created_at ASC").all();
+    return (rows.results ?? []).map(mapRemoteSyncSourceRow);
+  }
+  async getRemoteSyncSource(id) {
+    const row = await this.db.prepare("SELECT * FROM remote_sync_sources WHERE id = ?").bind(id).first();
+    return row ? mapRemoteSyncSourceRow(row) : null;
+  }
+  async saveRemoteSyncSource(source) {
+    await this.db.prepare(
+      "INSERT INTO remote_sync_sources(id, url, email, encrypted_password_hash, sync_interval_minutes, enabled, status, last_sync_at, last_result, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET url=excluded.url, email=excluded.email, encrypted_password_hash=excluded.encrypted_password_hash, sync_interval_minutes=excluded.sync_interval_minutes, enabled=excluded.enabled, status=excluded.status, last_sync_at=excluded.last_sync_at, last_result=excluded.last_result, updated_at=excluded.updated_at"
+    ).bind(
+      source.id,
+      source.url,
+      source.email,
+      source.encryptedPasswordHash,
+      source.syncIntervalMinutes,
+      source.enabled ? 1 : 0,
+      source.status,
+      source.lastSyncAt,
+      source.lastResult,
+      source.createdAt,
+      source.updatedAt
+    ).run();
+  }
+  async deleteRemoteSyncSource(id) {
+    await this.db.prepare("DELETE FROM remote_sync_sources WHERE id = ?").bind(id).run();
+  }
 };
+function mapRemoteSyncSourceRow(row) {
+  return {
+    id: row.id,
+    url: row.url,
+    email: row.email,
+    encryptedPasswordHash: row.encrypted_password_hash,
+    syncIntervalMinutes: Number(row.sync_interval_minutes) || 60,
+    enabled: !!row.enabled,
+    status: row.status || "idle",
+    lastSyncAt: row.last_sync_at ?? null,
+    lastResult: row.last_result ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
 
 // src/utils/origins.ts
 var OFFICIAL_BITWARDEN_BROWSER_EXTENSION_ORIGINS = [
@@ -31560,12 +31605,12 @@ var BackupTransferRunner = class {
       return null;
     }
     const token = crypto.randomUUID();
-    const nowIso = new Date(nowMs).toISOString();
+    const nowIso2 = new Date(nowMs).toISOString();
     await this.state.storage.put(BACKUP_JOB_STATE_KEY, {
       token,
       reason,
-      acquiredAt: nowIso,
-      touchedAt: nowIso,
+      acquiredAt: nowIso2,
+      touchedAt: nowIso2,
       expiresAtMs: nowMs + BACKUP_JOB_LEASE_MS
     });
     this.lastHeartbeatAt = 0;
@@ -38354,9 +38399,625 @@ async function handleAdminBackupRoute(request, env, actorUser, path5, method) {
   return null;
 }
 
+// src/services/remote-sync.ts
+var SYNC_DEVICE_TYPE = "14";
+var SYNC_DEVICE_NAME = "NodeWarden Sync";
+var DEFAULT_KDF_ITERATIONS = 6e5;
+async function deriveSecretKey(env) {
+  const digest2 = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(env.JWT_SECRET));
+  return crypto.subtle.importKey("raw", digest2, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+async function encryptSecret(env, plaintext) {
+  const key = await deriveSecretKey(env);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(plaintext);
+  const sealed = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+  const tag = sealed.slice(sealed.byteLength - 16);
+  const body = sealed.slice(0, sealed.byteLength - 16);
+  return [
+    bytesToBase643(new Uint8Array(iv)),
+    bytesToBase643(new Uint8Array(tag)),
+    bytesToBase643(new Uint8Array(body))
+  ].join(".");
+}
+async function decryptSecret(env, sealed) {
+  const [ivB64, tagB64, bodyB64] = String(sealed || "").split(".");
+  if (!ivB64 || !tagB64 || !bodyB64) throw new Error("Malformed sealed secret");
+  const key = await deriveSecretKey(env);
+  const iv = base64ToBytes3(ivB64);
+  const tag = base64ToBytes3(tagB64);
+  const body = base64ToBytes3(bodyB64);
+  const payload = new Uint8Array(body.length + tag.length);
+  payload.set(body, 0);
+  payload.set(tag, body.length);
+  const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, payload);
+  return new TextDecoder().decode(decrypted);
+}
+function bytesToBase643(bytes) {
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+function base64ToBytes3(value) {
+  const binary = atob(value);
+  const out = new Uint8Array(binary.length);
+  for (let i2 = 0; i2 < binary.length; i2 += 1) out[i2] = binary.charCodeAt(i2);
+  return out;
+}
+async function pbkdf2(passwordOrBytes, saltOrBytes, iterations, length) {
+  const pwdBytes = typeof passwordOrBytes === "string" ? new TextEncoder().encode(passwordOrBytes) : passwordOrBytes;
+  const saltBytes = typeof saltOrBytes === "string" ? new TextEncoder().encode(saltOrBytes) : saltOrBytes;
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    pwdBytes,
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+  const bits2 = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: saltBytes, iterations },
+    keyMaterial,
+    length * 8
+  );
+  return new Uint8Array(bits2);
+}
+async function computeMasterPasswordHash(masterPassword, email, iterations) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const masterKey = await pbkdf2(masterPassword, normalizedEmail, iterations, 32);
+  const hash = await pbkdf2(masterKey, masterPassword, 1, 32);
+  return bytesToBase643(hash);
+}
+async function getRemotePreloginKdf(url, email) {
+  const resp = await fetch(`${url}/identity/accounts/prelogin`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: String(email || "").trim().toLowerCase() })
+  });
+  if (!resp.ok) {
+    throw new Error(`\u8FDC\u7AEF\u5E93 prelogin \u5931\u8D25\uFF08HTTP ${resp.status}\uFF09\uFF0C\u8BF7\u786E\u8BA4\u7F51\u5740\u548C\u90AE\u7BB1\u6B63\u786E`);
+  }
+  const data = await resp.json();
+  return {
+    kdfType: Number(data.kdf ?? 0) || 0,
+    kdfIterations: Number(data.kdfIterations || DEFAULT_KDF_ITERATIONS)
+  };
+}
+async function loginRemoteVault(url, email, passwordHash) {
+  const deviceIdentifier = crypto.randomUUID();
+  const body = new URLSearchParams();
+  body.set("grant_type", "password");
+  body.set("username", String(email || "").trim().toLowerCase());
+  body.set("password", passwordHash);
+  body.set("scope", "api offline_access");
+  body.set("client_id", "web");
+  body.set("deviceType", SYNC_DEVICE_TYPE);
+  body.set("deviceIdentifier", deviceIdentifier);
+  body.set("deviceName", SYNC_DEVICE_NAME);
+  let resp;
+  try {
+    resp = await fetch(`${url}/identity/connect/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    });
+  } catch {
+    throw new Error("\u65E0\u6CD5\u8FDE\u63A5\u8FDC\u7AEF\u5E93\uFF0C\u8BF7\u68C0\u67E5\u7F51\u5740\u662F\u5426\u53EF\u8BBF\u95EE");
+  }
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    if (/two_factor|2fa/i.test(text)) {
+      throw new Error("\u8FDC\u7AEF\u5E93\u5F00\u542F\u4E86\u4E24\u6B65\u9A8C\u8BC1\uFF0C\u540C\u6B65\u6682\u4E0D\u652F\u6301\u5F00\u542F 2FA \u7684\u8D26\u53F7");
+    }
+    if (resp.status === 400) {
+      throw new Error("\u767B\u5F55\u5931\u8D25\uFF1A\u90AE\u7BB1\u6216\u4E3B\u5BC6\u7801\u4E0D\u6B63\u786E");
+    }
+    throw new Error(`\u767B\u5F55\u8FDC\u7AEF\u5E93\u5931\u8D25\uFF08HTTP ${resp.status}\uFF09`);
+  }
+  const data = await resp.json();
+  if (!data.access_token) {
+    throw new Error("\u767B\u5F55\u8FDC\u7AEF\u5E93\u5931\u8D25\uFF1A\u672A\u8FD4\u56DE\u8BBF\u95EE\u4EE4\u724C");
+  }
+  return { accessToken: data.access_token, deviceIdentifier };
+}
+async function fetchRemoteSync(url, accessToken) {
+  let resp;
+  try {
+    resp = await fetch(`${url}/api/sync`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  } catch {
+    throw new Error("\u8FDE\u63A5\u8FDC\u7AEF\u5E93\u5931\u8D25\uFF1A\u65E0\u6CD5\u62C9\u53D6\u540C\u6B65\u6570\u636E");
+  }
+  if (!resp.ok) {
+    throw new Error(`\u62C9\u53D6\u8FDC\u7AEF\u5E93\u540C\u6B65\u6570\u636E\u5931\u8D25\uFF08HTTP ${resp.status}\uFF09`);
+  }
+  const data = await resp.json();
+  if (!data || !data.profile) {
+    throw new Error("\u8FDC\u7AEF\u5E93\u8FD4\u56DE\u7684\u6570\u636E\u683C\u5F0F\u5F02\u5E38\uFF08\u7F3A\u5C11 profile\uFF09");
+  }
+  return data;
+}
+function extractRemotePublicKey(profile) {
+  const accountKeys = profile.accountKeys;
+  if (accountKeys && typeof accountKeys === "object") {
+    const pair = accountKeys.publicKeyEncryptionKeyPair;
+    if (pair && typeof pair.publicKey === "string" && pair.publicKey) return pair.publicKey;
+    if (typeof accountKeys.publicKey === "string" && accountKeys.publicKey) return accountKeys.publicKey;
+  }
+  return null;
+}
+async function resolveLocalUser(storage, profile, passwordHash, warnings) {
+  const remoteId = String(profile.id || "").trim();
+  const remoteEmail = String(profile.email || "").trim().toLowerCase();
+  const remoteKey = profile.key || "";
+  const byId = remoteId ? await storage.getUserById(remoteId) : null;
+  const existing = byId || (remoteEmail ? await storage.getUser(remoteEmail) : null);
+  if (existing) {
+    const keyMatches = !remoteKey || existing.key === remoteKey;
+    const hasLocalData = (await storage.getAllCiphers(existing.id)).length > 0;
+    if (!keyMatches) {
+      if (hasLocalData) {
+        warnings.push(
+          "\u672C\u5730\u5DF2\u5B58\u5728\u540C\u540D\u8D26\u53F7\uFF08" + existing.email + "\uFF09\u4F46\u5BC6\u94A5\u4E0E\u8FDC\u7AEF\u4E0D\u4E00\u81F4\uFF1A\u4E3A\u907F\u514D\u635F\u574F\u672C\u5730\u5BC6\u7801\uFF0C\u672A\u540C\u6B65\u5BC6\u7801\u6761\u76EE\u3002\u5982\u9700\u540C\u6B65\u8BF7\u4F7F\u7528\u4E0E\u8FDC\u7AEF\u76F8\u540C\u7684\u4E3B\u5BC6\u7801\u5728\u672C\u5730\u6CE8\u518C\u8BE5\u8D26\u53F7\uFF0C\u6216\u5148\u5220\u9664\u672C\u5730\u8BE5\u8D26\u53F7\u518D\u540C\u6B65\u3002"
+        );
+        return { user: existing, dataSyncAllowed: false };
+      }
+      warnings.push("\u672C\u5730\u8D26\u53F7\u5BC6\u94A5\u4E0E\u8FDC\u7AEF\u4E0D\u4E00\u81F4\uFF0C\u5C06\u4EE5\u8FDC\u7AEF\u5BC6\u94A5\u8986\u76D6\uFF08\u8BE5\u8D26\u53F7\u672C\u5730\u6682\u65E0\u5BC6\u7801\u6570\u636E\uFF09");
+    }
+    return { user: existing, dataSyncAllowed: true };
+  }
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const newUser = {
+    id: remoteId || crypto.randomUUID(),
+    email: remoteEmail,
+    name: profile.name ?? null,
+    masterPasswordHint: null,
+    masterPasswordHash: passwordHash,
+    key: remoteKey || "",
+    privateKey: profile.privateKey ?? null,
+    publicKey: extractRemotePublicKey(profile),
+    kdfType: 0,
+    kdfIterations: Number(profile.kdfIterations) || DEFAULT_KDF_ITERATIONS,
+    securityStamp: crypto.randomUUID(),
+    role: "user",
+    status: "active",
+    verifyDevices: false,
+    totpSecret: null,
+    totpRecoveryCode: null,
+    yubikeyKey1: null,
+    yubikeyKey2: null,
+    yubikeyKey3: null,
+    yubikeyKey4: null,
+    yubikeyKey5: null,
+    yubikeyNfc: false,
+    apiKey: null,
+    createdAt: profile.creationDate || now,
+    updatedAt: now
+  };
+  await storage.createUser(newUser);
+  warnings.push(`\u5DF2\u5728\u672C\u5730\u521B\u5EFA\u8D26\u53F7 ${remoteEmail}\uFF08\u53EF\u4F7F\u7528\u76F8\u540C\u4E3B\u5BC6\u7801\u767B\u5F55\u672C\u5730\u5E93\u67E5\u770B\u540C\u6B65\u7684\u5BC6\u7801\uFF09`);
+  return { user: newUser, dataSyncAllowed: true };
+}
+function normalizeRemoteFolderId(value) {
+  if (typeof value !== "string" || !value) return null;
+  return value;
+}
+function buildLocalCipher(remoteCipher, userId) {
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const remoteDeleted = remoteCipher.deletedDate ?? remoteCipher.deletedAt ?? null;
+  const remoteArchived = remoteCipher.archivedAt ?? remoteCipher.archivedDate ?? null;
+  const cipher = {
+    ...remoteCipher,
+    id: String(remoteCipher.id || crypto.randomUUID()),
+    userId,
+    type: Number(remoteCipher.type) || 1,
+    folderId: normalizeRemoteFolderId(remoteCipher.folderId),
+    name: remoteCipher.name ?? null,
+    notes: remoteCipher.notes ?? null,
+    favorite: !!remoteCipher.favorite,
+    login: remoteCipher.login ?? null,
+    card: remoteCipher.card ?? null,
+    identity: remoteCipher.identity ?? null,
+    secureNote: remoteCipher.secureNote ?? null,
+    sshKey: remoteCipher.sshKey ?? null,
+    fields: remoteCipher.fields ?? null,
+    passwordHistory: remoteCipher.passwordHistory ?? null,
+    reprompt: Number(remoteCipher.reprompt) || 0,
+    key: remoteCipher.key ?? null,
+    createdAt: remoteCipher.createdAt || now,
+    updatedAt: remoteCipher.updatedAt || now,
+    archivedAt: remoteDeleted ? null : remoteArchived ?? null,
+    deletedAt: remoteDeleted ?? null
+  };
+  delete cipher.deletedDate;
+  delete cipher.archivedDate;
+  return cipher;
+}
+async function downloadRemoteAttachment(url, accessToken, cipherId, attachment, env, warnings) {
+  try {
+    const resp = await fetch(`${url}/api/ciphers/${cipherId}/attachment/${attachment.id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!resp.ok) return false;
+    const bytes = await resp.arrayBuffer();
+    const key = getAttachmentObjectKey(cipherId, String(attachment.id));
+    await putBlobObject(env, key, bytes, {
+      contentType: "application/octet-stream",
+      size: bytes.byteLength
+    });
+    return true;
+  } catch {
+    warnings.push(`\u9644\u4EF6 ${String(attachment.fileName || attachment.id)} \u6587\u4EF6\u5185\u5BB9\u4E0B\u8F7D\u5931\u8D25\uFF08\u5C06\u4EC5\u4FDD\u7559\u9644\u4EF6\u4FE1\u606F\uFF09`);
+    return false;
+  }
+}
+async function synchronizeRemoteSourceById(env, sourceId, options) {
+  const storage = new StorageService(env.DB);
+  const source = await storage.getRemoteSyncSource(sourceId);
+  if (!source) {
+    throw new Error("\u540C\u6B65\u6E90\u4E0D\u5B58\u5728");
+  }
+  const startedAt = (/* @__PURE__ */ new Date()).toISOString();
+  const result = {
+    ok: false,
+    added: 0,
+    updated: 0,
+    folders: 0,
+    attachments: 0,
+    attachmentsDownloaded: 0,
+    warnings: [],
+    error: null,
+    startedAt,
+    finishedAt: startedAt,
+    remoteUrl: source.url,
+    remoteEmail: source.email,
+    localUserId: null
+  };
+  await storage.saveRemoteSyncSource({ ...source, status: "syncing", updatedAt: startedAt });
+  try {
+    let passwordHash;
+    if (options?.masterPasswordOverride) {
+      const kdf = await getRemotePreloginKdf(source.url, source.email);
+      if (kdf.kdfType !== 0) {
+        throw new Error("\u8FDC\u7AEF\u5E93\u4F7F\u7528\u4E86 Argon2id KDF\uFF0C\u5F53\u524D\u7248\u672C\u4EC5\u652F\u6301 PBKDF2\uFF08KDF 0\uFF09");
+      }
+      passwordHash = await computeMasterPasswordHash(options.masterPasswordOverride, source.email, kdf.kdfIterations);
+      const sealed = await encryptSecret(env, passwordHash);
+      source.encryptedPasswordHash = sealed;
+    } else {
+      passwordHash = await decryptSecret(env, source.encryptedPasswordHash);
+    }
+    const { accessToken } = await loginRemoteVault(source.url, source.email, passwordHash);
+    const syncData = await fetchRemoteSync(source.url, accessToken);
+    const profile = syncData.profile;
+    const { user, dataSyncAllowed } = await resolveLocalUser(storage, profile, passwordHash, result.warnings);
+    if (dataSyncAllowed) {
+      for (const folder of syncData.folders ?? []) {
+        const folderId = String(folder.id || "");
+        if (!folderId) continue;
+        const localFolder = {
+          id: folderId,
+          userId: user.id,
+          name: String(folder.name ?? ""),
+          createdAt: folder.creationDate || (/* @__PURE__ */ new Date()).toISOString(),
+          updatedAt: folder.revisionDate || (/* @__PURE__ */ new Date()).toISOString()
+        };
+        await storage.saveFolder(localFolder);
+        result.folders += 1;
+      }
+      for (const remoteCipher of syncData.ciphers ?? []) {
+        const localCipher = buildLocalCipher(remoteCipher, user.id);
+        const existing = await storage.getCipherForUser(localCipher.id, user.id);
+        if (existing) {
+          result.updated += 1;
+        } else {
+          result.added += 1;
+        }
+        await storage.saveCipher(localCipher);
+        for (const attachment of remoteCipher.attachments ?? []) {
+          const localAttachment = {
+            id: String(attachment.id || crypto.randomUUID()),
+            cipherId: localCipher.id,
+            fileName: String(attachment.fileName ?? ""),
+            size: Number(attachment.size) || 0,
+            sizeName: String(attachment.sizeName ?? ""),
+            key: attachment.key ?? null
+          };
+          await storage.saveAttachment(localAttachment);
+          result.attachments += 1;
+          const downloaded = await downloadRemoteAttachment(source.url, accessToken, localCipher.id, attachment, env, result.warnings);
+          if (downloaded) result.attachmentsDownloaded += 1;
+        }
+      }
+      await storage.updateRevisionDate(user.id);
+      result.localUserId = user.id;
+    }
+    const finishedAt = (/* @__PURE__ */ new Date()).toISOString();
+    result.ok = true;
+    result.finishedAt = finishedAt;
+    const updatedSource = {
+      ...source,
+      status: "ok",
+      lastSyncAt: finishedAt,
+      lastResult: JSON.stringify({
+        ok: true,
+        added: result.added,
+        updated: result.updated,
+        folders: result.folders,
+        attachments: result.attachments,
+        attachmentsDownloaded: result.attachmentsDownloaded,
+        warnings: result.warnings,
+        localUserId: user.id,
+        keyMismatchSkipped: !dataSyncAllowed
+      }),
+      updatedAt: finishedAt
+    };
+    if (options?.masterPasswordOverride) {
+      updatedSource.encryptedPasswordHash = source.encryptedPasswordHash;
+    }
+    await storage.saveRemoteSyncSource(updatedSource);
+    return { source: updatedSource, result };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    result.error = message;
+    const finishedAt = (/* @__PURE__ */ new Date()).toISOString();
+    result.finishedAt = finishedAt;
+    const updatedSource = {
+      ...source,
+      status: "error",
+      lastSyncAt: null,
+      lastResult: JSON.stringify({ ok: false, error: message, warnings: result.warnings }),
+      updatedAt: finishedAt
+    };
+    await storage.saveRemoteSyncSource(updatedSource);
+    return { source: updatedSource, result };
+  }
+}
+async function runScheduledRemoteSyncIfDue(env) {
+  const storage = new StorageService(env.DB);
+  const sources = await storage.listRemoteSyncSources();
+  const now = Date.now();
+  for (const source of sources) {
+    if (!source.enabled) continue;
+    if (source.status === "syncing") continue;
+    const intervalMs = Math.max(1, Number(source.syncIntervalMinutes) || 60) * 60 * 1e3;
+    if (!source.lastSyncAt || now - Date.parse(source.lastSyncAt) >= intervalMs) {
+      try {
+        await synchronizeRemoteSourceById(env, source.id);
+      } catch (error) {
+        console.error("[nodewarden] scheduled remote sync failed:", source.id, error);
+      }
+    }
+  }
+}
+
+// src/handlers/remote-sync-admin.ts
+async function readJsonBody3(request) {
+  try {
+    const body = await request.json();
+    return body && typeof body === "object" && !Array.isArray(body) ? body : {};
+  } catch {
+    return {};
+  }
+}
+function randomUUID() {
+  return crypto.randomUUID();
+}
+function nowIso() {
+  return (/* @__PURE__ */ new Date()).toISOString();
+}
+function sanitizeSource(source) {
+  return {
+    id: source.id,
+    url: source.url,
+    email: source.email,
+    syncIntervalMinutes: source.syncIntervalMinutes,
+    enabled: source.enabled,
+    status: source.status,
+    lastSyncAt: source.lastSyncAt,
+    lastResult: source.lastResult ? safeParseJson(source.lastResult) : null,
+    createdAt: source.createdAt,
+    updatedAt: source.updatedAt
+  };
+}
+function safeParseJson(value) {
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+function normalizeUrl(value) {
+  const raw = String(value || "").trim().replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(raw)) {
+    throw new Error("\u7F51\u5740\u5FC5\u987B\u4EE5 http:// \u6216 https:// \u5F00\u5934");
+  }
+  return raw;
+}
+function normalizeEmail(value) {
+  const email = String(value || "").trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    throw new Error("\u90AE\u7BB1\u683C\u5F0F\u4E0D\u6B63\u786E");
+  }
+  return email;
+}
+function normalizeInterval(value) {
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes) || minutes < 1 || minutes > 10080) {
+    throw new Error("\u540C\u6B65\u95F4\u9694\u987B\u4E3A 1 ~ 10080 \u5206\u949F\u4E4B\u95F4\u7684\u6574\u6570");
+  }
+  return Math.round(minutes);
+}
+async function handleListRemoteSyncSources(request, env, actorUser) {
+  void request;
+  void actorUser;
+  const storage = new StorageService(env.DB);
+  const sources = await storage.listRemoteSyncSources();
+  return jsonResponse({ object: "list", data: sources.map(sanitizeSource) });
+}
+async function handleCreateRemoteSyncSource(request, env, actorUser) {
+  void actorUser;
+  const body = await readJsonBody3(request);
+  try {
+    const url = normalizeUrl(body.url);
+    const email = normalizeEmail(body.email);
+    const masterPassword = String(body.masterPassword || "");
+    if (!masterPassword) {
+      return errorResponse("masterPassword is required", 400);
+    }
+    const syncIntervalMinutes = body.syncIntervalMinutes == null ? 60 : normalizeInterval(body.syncIntervalMinutes);
+    const enabled = body.enabled == null ? true : !!body.enabled;
+    const storage = new StorageService(env.DB);
+    const now = nowIso();
+    const source = {
+      id: randomUUID(),
+      url,
+      email,
+      encryptedPasswordHash: "",
+      syncIntervalMinutes,
+      enabled,
+      status: "idle",
+      lastSyncAt: null,
+      lastResult: null,
+      createdAt: now,
+      updatedAt: now
+    };
+    await storage.saveRemoteSyncSource(source);
+    const outcome = await synchronizeRemoteSourceById(env, source.id, { masterPasswordOverride: masterPassword });
+    const syncedSource = outcome.source;
+    const result = outcome.result;
+    return jsonResponse(
+      {
+        object: "remote-sync-source",
+        ...sanitizeSource(syncedSource),
+        syncResult: {
+          ok: result.ok,
+          added: result.added,
+          updated: result.updated,
+          folders: result.folders,
+          attachments: result.attachments,
+          attachmentsDownloaded: result.attachmentsDownloaded,
+          warnings: result.warnings,
+          error: result.error
+        }
+      },
+      result.ok ? 200 : 422
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return errorResponse(message, 400);
+  }
+}
+async function handleUpdateRemoteSyncSource(request, env, actorUser, sourceId) {
+  void actorUser;
+  const storage = new StorageService(env.DB);
+  const source = await storage.getRemoteSyncSource(sourceId);
+  if (!source) {
+    return errorResponse("Remote sync source not found", 404);
+  }
+  const body = await readJsonBody3(request);
+  const updated = { ...source };
+  try {
+    if (body.url != null) updated.url = normalizeUrl(body.url);
+    if (body.email != null) updated.email = normalizeEmail(body.email);
+    if (body.syncIntervalMinutes != null) updated.syncIntervalMinutes = normalizeInterval(body.syncIntervalMinutes);
+    if (body.enabled != null) updated.enabled = !!body.enabled;
+    updated.updatedAt = nowIso();
+    await storage.saveRemoteSyncSource(updated);
+    if (body.masterPassword != null && String(body.masterPassword || "").length > 0) {
+      const outcome = await synchronizeRemoteSourceById(env, source.id, {
+        masterPasswordOverride: String(body.masterPassword)
+      });
+      return jsonResponse({
+        object: "remote-sync-source",
+        ...sanitizeSource(outcome.source),
+        syncResult: {
+          ok: outcome.result.ok,
+          added: outcome.result.added,
+          updated: outcome.result.updated,
+          folders: outcome.result.folders,
+          attachments: outcome.result.attachments,
+          attachmentsDownloaded: outcome.result.attachmentsDownloaded,
+          warnings: outcome.result.warnings,
+          error: outcome.result.error
+        }
+      }, outcome.result.ok ? 200 : 422);
+    }
+    return jsonResponse({ object: "remote-sync-source", ...sanitizeSource(updated) });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return errorResponse(message, 400);
+  }
+}
+async function handleDeleteRemoteSyncSource(request, env, actorUser, sourceId) {
+  void request;
+  void actorUser;
+  const storage = new StorageService(env.DB);
+  const source = await storage.getRemoteSyncSource(sourceId);
+  if (!source) {
+    return errorResponse("Remote sync source not found", 404);
+  }
+  await storage.deleteRemoteSyncSource(sourceId);
+  return jsonResponse({ object: "remote-sync-source", deleted: true, id: sourceId });
+}
+async function handleTriggerRemoteSyncSource(request, env, actorUser, sourceId) {
+  void request;
+  void actorUser;
+  const storage = new StorageService(env.DB);
+  const source = await storage.getRemoteSyncSource(sourceId);
+  if (!source) {
+    return errorResponse("Remote sync source not found", 404);
+  }
+  const outcome = await synchronizeRemoteSourceById(env, sourceId);
+  return jsonResponse(
+    {
+      object: "remote-sync-source",
+      ...sanitizeSource(outcome.source),
+      syncResult: {
+        ok: outcome.result.ok,
+        added: outcome.result.added,
+        updated: outcome.result.updated,
+        folders: outcome.result.folders,
+        attachments: outcome.result.attachments,
+        attachmentsDownloaded: outcome.result.attachmentsDownloaded,
+        warnings: outcome.result.warnings,
+        error: outcome.result.error
+      }
+    },
+    outcome.result.ok ? 200 : 422
+  );
+}
+
+// src/router-admin-remote-sync.ts
+async function handleAdminRemoteSyncRoute(request, env, actorUser, path5, method) {
+  if (path5 === "/api/admin/remote-sync" && method === "GET") {
+    return handleListRemoteSyncSources(request, env, actorUser);
+  }
+  if (path5 === "/api/admin/remote-sync" && method === "POST") {
+    return handleCreateRemoteSyncSource(request, env, actorUser);
+  }
+  const itemMatch = path5.match(/^\/api\/admin\/remote-sync\/([a-f0-9-]+)(?:\/(trigger))?$/i);
+  if (itemMatch) {
+    const sourceId = itemMatch[1];
+    const subAction = itemMatch[2];
+    if (subAction === "trigger" && method === "POST") {
+      return handleTriggerRemoteSyncSource(request, env, actorUser, sourceId);
+    }
+    if (method === "PUT") {
+      return handleUpdateRemoteSyncSource(request, env, actorUser, sourceId);
+    }
+    if (method === "DELETE") {
+      return handleDeleteRemoteSyncSource(request, env, actorUser, sourceId);
+    }
+    return null;
+  }
+  return null;
+}
+
 // src/router-admin.ts
 function isKnownAdminPath(path5) {
-  return path5 === "/api/admin/users" || path5 === "/api/admin/logs" || path5 === "/api/admin/logs/settings" || path5 === "/api/admin/invites" || path5.startsWith("/api/admin/backup") || /^\/api\/admin\/invites\/[^/]+$/i.test(path5) || /^\/api\/admin\/users\/[a-f0-9-]+(?:\/status)?$/i.test(path5);
+  return path5 === "/api/admin/users" || path5 === "/api/admin/logs" || path5 === "/api/admin/logs/settings" || path5 === "/api/admin/invites" || path5.startsWith("/api/admin/backup") || path5.startsWith("/api/admin/remote-sync") || /^\/api\/admin\/invites\/[^/]+$/i.test(path5) || /^\/api\/admin\/users\/[a-f0-9-]+(?:\/status)?$/i.test(path5);
 }
 function isActiveAdmin(user) {
   return user.role === "admin" && user.status === "active";
@@ -38384,6 +39045,8 @@ async function handleAdminRoute(request, env, actorUser, path5, method) {
   }
   const adminBackupResponse = await handleAdminBackupRoute(request, env, actorUser, path5, method);
   if (adminBackupResponse) return adminBackupResponse;
+  const adminRemoteSyncResponse = await handleAdminRemoteSyncRoute(request, env, actorUser, path5, method);
+  if (adminRemoteSyncResponse) return adminRemoteSyncResponse;
   if (path5 === "/api/admin/invites") {
     if (method === "GET") return handleAdminListInvites(request, env, actorUser);
     if (method === "POST") return handleAdminCreateInvite(request, env, actorUser);
@@ -45972,7 +46635,7 @@ var MAX_TWO_FACTOR_PASSKEYS = 5;
 function parseBodyObject(body) {
   return body && typeof body === "object" ? body : {};
 }
-async function readJsonBody3(request) {
+async function readJsonBody4(request) {
   try {
     return parseBodyObject(await request.json());
   } catch {
@@ -46218,7 +46881,7 @@ async function assertTwoFactorPasskeyCredential(request, env, storage, user, dev
   return credential;
 }
 async function handleGetTwoFactorWebAuthn(request, env, userId, user) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   if (!await verifyUserSecret2(env, user, body)) {
     return errorResponse("User verification failed.", 400);
@@ -46228,7 +46891,7 @@ async function handleGetTwoFactorWebAuthn(request, env, userId, user) {
   return jsonResponse(twoFactorWebAuthnResponse(credentials));
 }
 async function handleGetTwoFactorWebAuthnChallenge(request, env, userId, user) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   if (!await verifyUserSecret2(env, user, body)) {
     return errorResponse("User verification failed.", 400);
@@ -46261,7 +46924,7 @@ async function handleGetTwoFactorWebAuthnChallenge(request, env, userId, user) {
   return jsonResponse(options);
 }
 async function handlePutTwoFactorWebAuthn(request, env, userId, user) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   if (!await verifyUserSecret2(env, user, body)) {
     return errorResponse("User verification failed.", 400);
@@ -46349,7 +47012,7 @@ async function handlePutTwoFactorWebAuthn(request, env, userId, user) {
   return jsonResponse(twoFactorWebAuthnResponse(credentials));
 }
 async function handleDeleteTwoFactorWebAuthn(request, env, userId, user) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   if (!await verifyUserSecret2(env, user, body)) {
     return errorResponse("User verification failed.", 400);
@@ -46383,7 +47046,7 @@ async function handleDeleteTwoFactorWebAuthn(request, env, userId, user) {
   return jsonResponse(twoFactorWebAuthnResponse(await storage.getAccountPasskeyCredentialsByUserId(userId, "twoFactor")));
 }
 async function handleGetAccountPasskeyAttestationOptions(request, env, userId, user) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   let stage = "verify_master_password";
   try {
@@ -46436,7 +47099,7 @@ async function handleGetAccountPasskeyAttestationOptions(request, env, userId, u
   }
 }
 async function handleGetAccountPasskeyUpdateAssertionOptions(request, env, userId, user) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   if (!await verifyUserSecret2(env, user, body)) {
     return errorResponse("Master password verification failed", 400);
@@ -46469,7 +47132,7 @@ async function handleGetAccountPasskeyUpdateAssertionOptions(request, env, userI
   return jsonResponse({ options, token, object: "webAuthnLoginAssertionOptions", Object: "webAuthnLoginAssertionOptions" });
 }
 async function handleCreateAccountPasskeyCredential(request, env, userId) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   const storage = new StorageService(env.DB);
   const payload = await verifyAccountPasskeyToken(env, String(body.token || ""), "CreateCredential");
@@ -46553,7 +47216,7 @@ async function handleCreateAccountPasskeyCredential(request, env, userId) {
   return jsonResponse(accountPasskeyCredentialToResponse(credential));
 }
 async function handleUpdateAccountPasskeyEncryption(request, env, userId) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   let prfKeySet;
   try {
@@ -46596,7 +47259,7 @@ async function handleUpdateAccountPasskeyEncryption(request, env, userId) {
   return jsonResponse({ success: true });
 }
 async function handleDeleteAccountPasskeyCredential(request, env, userId, credentialId, user) {
-  const body = await readJsonBody3(request);
+  const body = await readJsonBody4(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   if (!await verifyUserSecret2(env, user, body)) {
     return errorResponse("Master password verification failed", 400);
@@ -46723,7 +47386,7 @@ function listResponse(data) {
     ContinuationToken: null
   };
 }
-async function readJsonBody4(request) {
+async function readJsonBody5(request) {
   try {
     const body = await request.json();
     return body && typeof body === "object" ? body : null;
@@ -46758,7 +47421,7 @@ function isSupportedAuthRequestType(value) {
 }
 async function handleCreateAuthRequest(request, env) {
   const storage = new StorageService(env.DB);
-  const body = await readJsonBody4(request);
+  const body = await readJsonBody5(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   const email = normalizeText2(readBodyValue(body, ["email", "Email"]), 320).toLowerCase();
   const publicKey = normalizeText2(readBodyValue(body, ["publicKey", "PublicKey"]), 8192);
@@ -46812,7 +47475,7 @@ async function handleCreateAuthRequest(request, env) {
 }
 async function handleCreateAdminAuthRequest(request, env, userId, userEmail) {
   const storage = new StorageService(env.DB);
-  const body = await readJsonBody4(request);
+  const body = await readJsonBody5(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   const email = normalizeText2(readBodyValue(body, ["email", "Email"]), 320).toLowerCase() || userEmail.toLowerCase();
   const publicKey = normalizeText2(readBodyValue(body, ["publicKey", "PublicKey"]), 8192);
@@ -46899,7 +47562,7 @@ async function handleListPendingAuthRequests(request, env, userId) {
 }
 async function handleUpdateAuthRequest(request, env, userId, id) {
   const storage = new StorageService(env.DB);
-  const body = await readJsonBody4(request);
+  const body = await readJsonBody5(request);
   if (!body) return errorResponse("Invalid request payload", 400);
   const authRequest = await storage.getAuthRequestByIdForUser(id, userId);
   if (!authRequest || authRequest.userId !== userId || isAuthRequestExpired(authRequest)) {
@@ -49761,6 +50424,7 @@ function installLocalCaches() {
 
 // local/index.ts
 var BACKUP_INTERVAL_MS = 5 * 60 * 1e3;
+var REMOTE_SYNC_CHECK_INTERVAL_MS = 60 * 1e3;
 async function main() {
   globalThis.__NODEWARDEN_LOCAL__ = true;
   installLocalCaches();
@@ -49786,9 +50450,20 @@ async function main() {
     }
   }, BACKUP_INTERVAL_MS);
   timer.unref?.();
+  const remoteSyncTimer = setInterval(async () => {
+    try {
+      await runScheduledRemoteSyncIfDue(bundle.env).catch((error) => {
+        console.error("[nodewarden-local] scheduled remote sync failed:", error);
+      });
+    } catch (error) {
+      console.error("[nodewarden-local] scheduled remote sync error:", error);
+    }
+  }, REMOTE_SYNC_CHECK_INTERVAL_MS);
+  remoteSyncTimer.unref?.();
   const shutdown = async () => {
     console.log("\n[nodewarden-local] shutting down...");
     clearInterval(timer);
+    clearInterval(remoteSyncTimer);
     await new Promise((resolve2) => server.close(() => resolve2()));
     process.exit(0);
   };

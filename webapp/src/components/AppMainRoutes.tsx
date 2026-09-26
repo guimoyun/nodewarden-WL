@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'preact/compat';
 import { useEffect } from 'preact/hooks';
 import { Link, Route, Switch } from 'wouter';
-import { ArrowUpDown, Cloud, FileClock, Globe2, LogOut, Settings as SettingsIcon, Shield, ShieldCheck, ShieldUser } from 'lucide-preact';
+import { ArrowUpDown, Cloud, FileClock, Globe2, LogOut, RefreshCw, Settings as SettingsIcon, Shield, ShieldCheck, ShieldUser } from 'lucide-preact';
 import type { ImportAttachmentFile, ImportResultSummary } from '@/components/ImportPage';
 import LoadingState from '@/components/LoadingState';
 import type { AdminBackupImportResponse, AdminBackupRunResponse, AdminBackupSettings, RemoteBackupBrowserResponse } from '@/lib/api/backup';
@@ -22,6 +22,7 @@ const SecurityDevicesPage = lazy(() => import('@/components/SecurityDevicesPage'
 const AdminPage = lazy(() => import('@/components/AdminPage'));
 const LogCenterPage = lazy(() => import('@/components/LogCenterPage'));
 const BackupCenterPage = lazy(() => import('@/components/BackupCenterPage'));
+const RemoteSyncPage = lazy(() => import('@/components/RemoteSyncPage'));
 const ImportPage = lazy(() => import('@/components/ImportPage'));
 
 function RouteContentFallback() {
@@ -381,6 +382,10 @@ export default function AppMainRoutes(props: AppMainRoutesProps) {
                     <Cloud size={18} />
                     <span>{t('nav_backup_strategy')}</span>
                   </Link>
+                  <Link href="/remote-sync" className="mobile-settings-link">
+                    <RefreshCw size={18} />
+                    <span>{t('nav_remote_sync')}</span>
+                  </Link>
                   <Link href="/admin" className="mobile-settings-link">
                     <ShieldUser size={18} />
                     <span>{t('nav_admin_panel')}</span>
@@ -541,6 +546,23 @@ export default function AppMainRoutes(props: AppMainRoutesProps) {
                 onRunRemoteBackup={props.onRunRemoteBackup}
                 onNotify={props.onNotify}
               />
+            </Suspense>
+          </div>
+        ) : null}
+      </Route>
+      <Route path="/remote-sync">
+        {isAdmin ? (
+          <div className="stack">
+            {props.mobileLayout && (
+              <div className="mobile-settings-subhead">
+                <button type="button" className="btn btn-secondary small mobile-settings-back" onClick={() => props.onNavigate(props.settingsHomeRoute)}>
+                  <span className="btn-icon" aria-hidden="true">{"<"}</span>
+                  {t('txt_back')}
+                </button>
+              </div>
+            )}
+            <Suspense fallback={<RouteContentFallback />}>
+              <RemoteSyncPage session={props.session} onNotify={props.onNotify} />
             </Suspense>
           </div>
         ) : null}

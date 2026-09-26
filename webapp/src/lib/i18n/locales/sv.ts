@@ -1453,7 +1453,46 @@ const sv: Record<string, string> = {
 };
 
 Object.assign(sv, {
-  "nav_password_security": "Lösenordssäkerhet", "txt_password_security": "Säkerhetskontroll för lösenord", "txt_password_security_privacy": "Lösenord kontrolleras lokalt. Endast ett anonymt hashprefix skickas till läckdatabasen när du startar kontrollen.", "txt_check_password_security": "Starta kontroll", "txt_checking_password_security": "Kontrollerar", "txt_recheck_password_security": "Kontrollera igen", "txt_password_security_ready": "Ditt valv är redo för en säkerhetskontroll.", "txt_password_security_no_login": "Det finns inga inloggningslösenord att kontrollera.", "txt_password_security_manual": "Kontrollen startar bara när du väljer den. Resultaten stannar på denna sida.", "txt_password_security_no_login_help": "Lägg till en inloggning med lösenord och återvänd sedan hit för att kontrollera den.", "txt_exposed_passwords": "Läckta", "txt_reused_passwords": "Återanvända", "txt_weak_passwords": "Svaga", "txt_passwords_checked": "Kontrollerade", "txt_password_security_unavailable": "{count} lösenordskontroller kunde inte nå läckdatabasen. De markeras inte som säkra.", "txt_password_security_not_checked": "Inte kontrollerad", "txt_password_exposed_count": "Hittades i {count} läckor", "txt_password_reused_count": "Användes {count} gånger", "txt_weak_password": "Svagt lösenord", "txt_no_password_risks": "Inga lösenordsrisker hittades", "txt_open_vault": "Öppna valv", "txt_check_password_breach": "Kontrollera läcka", "txt_password_not_found_in_breaches": "Hittades inte i läckdatabasen", "txt_password_security_check_failed": "Läckkontrollen kunde inte slutföras."
+  "nav_password_security": "Lösenordssäkerhet", "txt_password_security": "Säkerhetskontroll för lösenord", "txt_password_security_privacy": "Lösenord kontrolleras lokalt. Endast ett anonymt hashprefix skickas till läckdatabasen när du startar kontrollen.", "txt_check_password_security": "Starta kontroll", "txt_checking_password_security": "Kontrollerar", "txt_recheck_password_security": "Kontrollera igen", "txt_password_security_ready": "Ditt valv är redo för en säkerhetskontroll.", "txt_password_security_no_login": "Det finns inga inloggningslösenord att kontrollera.", "txt_password_security_manual": "Kontrollen startar bara när du väljer den. Resultaten stannar på denna sida.", "txt_password_security_no_login_help": "Lägg till en inloggning med lösenord och återvänd sedan hit för att kontrollera den.", "txt_exposed_passwords": "Läckta", "txt_reused_passwords": "Återanvända", "txt_weak_passwords": "Svaga", "txt_passwords_checked": "Kontrollerade", "txt_password_security_unavailable": "{count} lösenordskontroller kunde inte nå läckdatabasen. De markeras inte som säkra.", "txt_password_security_not_checked": "Inte kontrollerad", "txt_password_exposed_count": "Hittades i {count} läckor", "txt_password_reused_count": "Användes {count} gånger", "txt_weak_password": "Svagt lösenord", "txt_no_password_risks": "Inga lösenordsrisker hittades", "txt_open_vault": "Öppna valv", "txt_check_password_breach": "Kontrollera läcka", "txt_password_not_found_in_breaches": "Hittades inte i läckdatabasen", "txt_password_security_check_failed": "Läckkontrollen kunde inte slutföras.",
+  "nav_remote_sync": "Synkronisering av fjärrvalv",
+  "txt_remote_sync_help_intro": "Lägg till andra NodeWarden- (eller Bitwarden-kompatibla) lösenordsvalv som synkroniseringskällor; deras poster hämtas till detta valv. Samma konto med samma huvudlösenord ser samma lösenord på flera noder.",
+  "txt_remote_sync_help_key": "Posterna förblir krypterade end-to-end: endast samma konto som skapats med samma huvudlösenord kan dekryptera synkroniserade poster. Om ett lokalt konto redan finns med en annan nyckel hoppas lösenordsdata över med en varning i stället för att skada det lokala valvet.",
+  "txt_remote_sync_add_source": "Lägg till fjärrvalv",
+  "txt_remote_sync_url": "Valvets URL",
+  "txt_remote_sync_email": "E-post",
+  "txt_remote_sync_master_password": "Huvudlösenord",
+  "txt_remote_sync_interval": "Synkroniseringsintervall (minuter)",
+  "txt_remote_sync_form_required": "URL, e-post och huvudlösenord krävs.",
+  "txt_remote_sync_adding": "Lägger till…",
+  "txt_remote_sync_add": "Lägg till och synkronisera nu",
+  "txt_remote_sync_added": "Fjärrvalvet har lagts till och synkroniserats.",
+  "txt_remote_sync_added_with_error": "Valvet har lagts till men den första synkroniseringen misslyckades. Se felet nedan eller försök igen.",
+  "txt_remote_sync_result_ok": "Första synkroniseringen klar: {added} tillagda, {updated} uppdaterade.",
+  "txt_remote_sync_result_error": "Första synkroniseringen misslyckades: {error}",
+  "txt_remote_sync_sources": "Synkroniseringskällor",
+  "txt_remote_sync_no_sources": "Inga fjärrvalv har konfigurerats ännu.",
+  "txt_remote_sync_status_idle": "Inaktiv",
+  "txt_remote_sync_status_syncing": "Synkroniserar",
+  "txt_remote_sync_status_ok": "OK",
+  "txt_remote_sync_status_error": "Fel",
+  "txt_remote_sync_every_minutes": "Var {minutes} min",
+  "txt_remote_sync_last_sync": "Senaste synkronisering: {time}",
+  "txt_remote_sync_stats": "Senaste resultat: {added} tillagda, {updated} uppdaterade, {folders} mappar",
+  "txt_remote_sync_sync_now": "Synkronisera nu",
+  "txt_remote_sync_syncing": "Synkroniserar…",
+  "txt_remote_sync_synced": "Synkroniseringen klar.",
+  "txt_remote_sync_sync_failed": "Synkroniseringen misslyckades.",
+  "txt_remote_sync_disable": "Inaktivera",
+  "txt_remote_sync_enable": "Aktivera",
+  "txt_remote_sync_delete_confirm_title": "Ta bort synkroniseringskälla",
+  "txt_remote_sync_delete_confirm_body": "Ta bort detta fjärrvalv från listan? Redan synkroniserade poster finns kvar.",
+  "txt_remote_sync_list_failed": "Kunde inte läsa in synkroniseringskällorna.",
+  "txt_remote_sync_create_failed": "Kunde inte lägga till fjärrvalvet.",
+  "txt_remote_sync_update_failed": "Kunde inte uppdatera synkroniseringskällan.",
+  "txt_remote_sync_trigger_failed": "Kunde inte starta synkroniseringen.",
+  "txt_remote_sync_delete_failed": "Kunde inte ta bort synkroniseringskällan.",
+  "txt_never": "Aldrig",
+
 });
 
 Object.assign(sv, { "txt_password_security_last_checked": "Senast kontrollerad: {value}" });

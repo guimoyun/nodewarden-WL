@@ -1453,7 +1453,46 @@ const it: Record<string, string> = {
 };
 
 Object.assign(it, {
-  "nav_password_security": "Sicurezza password", "txt_password_security": "Controllo sicurezza password", "txt_password_security_privacy": "Le password vengono controllate localmente. Solo un prefisso hash anonimo viene inviato al database delle violazioni dopo l'avvio.", "txt_check_password_security": "Avvia controllo", "txt_checking_password_security": "Controllo in corso", "txt_recheck_password_security": "Controlla di nuovo", "txt_password_security_ready": "Il tuo archivio è pronto per un controllo di sicurezza.", "txt_password_security_no_login": "Non ci sono password di accesso da controllare.", "txt_password_security_manual": "Il controllo parte solo quando lo scegli. I risultati restano solo in questa pagina.", "txt_password_security_no_login_help": "Aggiungi un accesso con password, quindi torna qui per controllarlo.", "txt_exposed_passwords": "Esposte", "txt_reused_passwords": "Riutilizzate", "txt_weak_passwords": "Deboli", "txt_passwords_checked": "Controllate", "txt_password_security_unavailable": "{count} controlli non hanno raggiunto il database delle violazioni. Non sono contrassegnati come sicuri.", "txt_password_security_not_checked": "Non controllata", "txt_password_exposed_count": "Trovata in {count} violazioni", "txt_password_reused_count": "Usata {count} volte", "txt_weak_password": "Password debole", "txt_no_password_risks": "Nessun rischio password trovato", "txt_open_vault": "Apri archivio", "txt_check_password_breach": "Controlla violazione", "txt_password_not_found_in_breaches": "Non trovata nel database delle violazioni", "txt_password_security_check_failed": "Impossibile completare il controllo delle violazioni."
+  "nav_password_security": "Sicurezza password", "txt_password_security": "Controllo sicurezza password", "txt_password_security_privacy": "Le password vengono controllate localmente. Solo un prefisso hash anonimo viene inviato al database delle violazioni dopo l'avvio.", "txt_check_password_security": "Avvia controllo", "txt_checking_password_security": "Controllo in corso", "txt_recheck_password_security": "Controlla di nuovo", "txt_password_security_ready": "Il tuo archivio è pronto per un controllo di sicurezza.", "txt_password_security_no_login": "Non ci sono password di accesso da controllare.", "txt_password_security_manual": "Il controllo parte solo quando lo scegli. I risultati restano solo in questa pagina.", "txt_password_security_no_login_help": "Aggiungi un accesso con password, quindi torna qui per controllarlo.", "txt_exposed_passwords": "Esposte", "txt_reused_passwords": "Riutilizzate", "txt_weak_passwords": "Deboli", "txt_passwords_checked": "Controllate", "txt_password_security_unavailable": "{count} controlli non hanno raggiunto il database delle violazioni. Non sono contrassegnati come sicuri.", "txt_password_security_not_checked": "Non controllata", "txt_password_exposed_count": "Trovata in {count} violazioni", "txt_password_reused_count": "Usata {count} volte", "txt_weak_password": "Password debole", "txt_no_password_risks": "Nessun rischio password trovato", "txt_open_vault": "Apri archivio", "txt_check_password_breach": "Controlla violazione", "txt_password_not_found_in_breaches": "Non trovata nel database delle violazioni", "txt_password_security_check_failed": "Impossibile completare il controllo delle violazioni.",
+  "nav_remote_sync": "Sincronizzazione vault remota",
+  "txt_remote_sync_help_intro": "Aggiungi altri vault NodeWarden (compatibili con Bitwarden) come fonti di sincronizzazione; le loro voci vengono importate in questo vault. Lo stesso account con la stessa password principale vedrà le stesse password su più nodi.",
+  "txt_remote_sync_help_key": "Le voci restano cifrate end-to-end: solo lo stesso account creato con la stessa password principale può decifrare le voci sincronizzate. Se esiste già un account locale con una chiave diversa, i dati vengono saltati con un avviso invece di danneggiare il vault locale.",
+  "txt_remote_sync_add_source": "Aggiungi vault remoto",
+  "txt_remote_sync_url": "URL del vault",
+  "txt_remote_sync_email": "Email",
+  "txt_remote_sync_master_password": "Password principale",
+  "txt_remote_sync_interval": "Intervallo di sincronizzazione (minuti)",
+  "txt_remote_sync_form_required": "URL, email e password principale sono obbligatori.",
+  "txt_remote_sync_adding": "Aggiunta…",
+  "txt_remote_sync_add": "Aggiungi e sincronizza ora",
+  "txt_remote_sync_added": "Vault remoto aggiunto e sincronizzato.",
+  "txt_remote_sync_added_with_error": "Vault aggiunto, ma la prima sincronizzazione è fallita. Vedi l'errore qui sotto o riprova.",
+  "txt_remote_sync_result_ok": "Prima sincronizzazione completata: {added} aggiunte, {updated} aggiornate.",
+  "txt_remote_sync_result_error": "Prima sincronizzazione fallita: {error}",
+  "txt_remote_sync_sources": "Fonti di sincronizzazione",
+  "txt_remote_sync_no_sources": "Nessun vault remoto configurato.",
+  "txt_remote_sync_status_idle": "Inattivo",
+  "txt_remote_sync_status_syncing": "Sincronizzazione",
+  "txt_remote_sync_status_ok": "OK",
+  "txt_remote_sync_status_error": "Errore",
+  "txt_remote_sync_every_minutes": "Ogni {minutes} min",
+  "txt_remote_sync_last_sync": "Ultima sincronizzazione: {time}",
+  "txt_remote_sync_stats": "Ultimo risultato: {added} aggiunte, {updated} aggiornate, {folders} cartelle",
+  "txt_remote_sync_sync_now": "Sincronizza ora",
+  "txt_remote_sync_syncing": "Sincronizzazione…",
+  "txt_remote_sync_synced": "Sincronizzazione completata.",
+  "txt_remote_sync_sync_failed": "Sincronizzazione fallita.",
+  "txt_remote_sync_disable": "Disattiva",
+  "txt_remote_sync_enable": "Attiva",
+  "txt_remote_sync_delete_confirm_title": "Rimuovi fonte di sincronizzazione",
+  "txt_remote_sync_delete_confirm_body": "Rimuovere questo vault remoto dall'elenco? Le voci già sincronizzate restano nel vault locale.",
+  "txt_remote_sync_list_failed": "Impossibile caricare le fonti di sincronizzazione.",
+  "txt_remote_sync_create_failed": "Impossibile aggiungere il vault remoto.",
+  "txt_remote_sync_update_failed": "Impossibile aggiornare la fonte di sincronizzazione.",
+  "txt_remote_sync_trigger_failed": "Impossibile avviare la sincronizzazione.",
+  "txt_remote_sync_delete_failed": "Impossibile rimuovere la fonte di sincronizzazione.",
+  "txt_never": "Mai",
+
 });
 
 Object.assign(it, { "txt_password_security_last_checked": "Ultimo controllo: {value}" });

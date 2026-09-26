@@ -170,6 +170,12 @@ const SCHEMA_STATEMENTS: readonly string[] = [
 
   'CREATE TABLE IF NOT EXISTS used_attachment_download_tokens (' +
   'jti TEXT PRIMARY KEY, expires_at INTEGER NOT NULL)',
+
+  'CREATE TABLE IF NOT EXISTS remote_sync_sources (' +
+  'id TEXT PRIMARY KEY, url TEXT NOT NULL, email TEXT NOT NULL, encrypted_password_hash TEXT NOT NULL, ' +
+  'sync_interval_minutes INTEGER NOT NULL DEFAULT 60, enabled INTEGER NOT NULL DEFAULT 1, ' +
+  'status TEXT NOT NULL DEFAULT \'idle\', last_sync_at TEXT, last_result TEXT, ' +
+  'created_at TEXT NOT NULL, updated_at TEXT NOT NULL)',
 ];
 
 async function executeSchemaStatement(db: D1Database, statement: string): Promise<void> {

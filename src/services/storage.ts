@@ -1,4 +1,4 @@
-import { User, Cipher, Folder, Attachment, Device, Invite, AuditLog, Send, TrustedDeviceTokenSummary, RefreshTokenRecord, CustomEquivalentDomain, AccountPasskeyChallenge, AccountPasskeyChallengeScope, AccountPasskeyCredential, AuthRequestRecord } from '../types';
+import { User, Cipher, Folder, Attachment, Device, Invite, AuditLog, Send, TrustedDeviceTokenSummary, RefreshTokenRecord, CustomEquivalentDomain, AccountPasskeyChallenge, AccountPasskeyChallengeScope, AccountPasskeyCredential, AuthRequestRecord, RemoteSyncSource } from '../types';
 import { LIMITS } from '../config/limits';
 import { ensurePushInstallationCredentials } from './push-relay';
 import { ensureStorageSchema } from './storage-schema';
@@ -164,7 +164,7 @@ const STORAGE_SCHEMA_VERSION_KEY = 'schema.version';
 // Bump this whenever src/services/storage-schema.ts or migrations/0001_init.sql
 // changes. Existing D1 installs only rerun ensureStorageSchema() when this value
 // differs from config.schema.version.
-const STORAGE_SCHEMA_VERSION = '2026-07-13-refresh-session-reuse';
+const STORAGE_SCHEMA_VERSION = '2026-09-27-remote-sync-sources';
 const REQUIRED_SCHEMA_TABLES = ['webauthn_credentials', 'webauthn_challenges', 'auth_requests', 'totp_login_replays'] as const;
 
 // D1-backed storage.
@@ -967,4 +967,61 @@ export class StorageService {
     }
     return result.consumed;
   }
+
+  // --- Remote sync sources (admin-managed) ---
+
+  async listRemoteSyncSources(): Promise<RemoteSyncSource[]> {
+    const rows = await this.db.prepare('SELECT * FROM remote_sync_sources ORDER BY created_at ASC').all<RemoteSyncSource>();
+    return (rows.results ?? []).map(mapRemoteSyncSourceRow);
+  }
+
+  async getRemoteSyncSource(id: string): Promise<RemoteSyncSource | null> {
+    const row = await this.db.prepare('SELECT * FROM remote_sync_sources WHERE id = ?').bind(id).first<RemoteSyncSource>();
+    return row ? mapRemoteSyncSourceRow(row) : null;
+  }
+
+  async saveRemoteSyncSource(source: RemoteSyncSource): Promise<void> {
+    await this.db
+      .prepare(
+        'INSERT INTO remote_sync_sources(id, url, email, encrypted_password_hash, sync_interval_minutes, enabled, status, last_sync_at, last_result, created_at, updated_at) ' +
+        'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ' +
+        'ON CONFLICT(id) DO UPDATE SET url=excluded.url, email=excluded.email, encrypted_password_hash=excluded.encrypted_password_hash, ' +
+        'sync_interval_minutes=excluded.sync_interval_minutes, enabled=excluded.enabled, status=excluded.status, ' +
+        'last_sync_at=excluded.last_sync_at, last_result=excluded.last_result, updated_at=excluded.updated_at'
+      )
+      .bind(
+        source.id,
+        source.url,
+        source.email,
+        source.encryptedPasswordHash,
+        source.syncIntervalMinutes,
+        source.enabled ? 1 : 0,
+        source.status,
+        source.lastSyncAt,
+        source.lastResult,
+        source.createdAt,
+        source.updatedAt
+      )
+      .run();
+  }
+
+  async deleteRemoteSyncSource(id: string): Promise<void> {
+    await this.db.prepare('DELETE FROM remote_sync_sources WHERE id = ?').bind(id).run();
+  }
+}
+
+function mapRemoteSyncSourceRow(row: any): RemoteSyncSource {
+  return {
+    id: row.id,
+    url: row.url,
+    email: row.email,
+    encryptedPasswordHash: row.encrypted_password_hash,
+    syncIntervalMinutes: Number(row.sync_interval_minutes) || 60,
+    enabled: !!row.enabled,
+    status: row.status || 'idle',
+    lastSyncAt: row.last_sync_at ?? null,
+    lastResult: row.last_result ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }

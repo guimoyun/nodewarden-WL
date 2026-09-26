@@ -1453,7 +1453,46 @@ const ru: Record<string, string> = {
 };
 
 Object.assign(ru, {
-  "nav_password_security": "Безопасность паролей", "txt_password_security": "Проверка безопасности паролей", "txt_password_security_privacy": "Пароли проверяются локально. После запуска в базу утечек передаётся только анонимный префикс хеша.", "txt_check_password_security": "Начать проверку", "txt_checking_password_security": "Проверка", "txt_recheck_password_security": "Проверить снова", "txt_password_security_ready": "Ваше хранилище готово к проверке безопасности.", "txt_password_security_no_login": "Нет паролей для входа, доступных для проверки.", "txt_password_security_manual": "Проверка запускается только по вашему выбору. Результаты остаются только на этой странице.", "txt_password_security_no_login_help": "Добавьте запись входа с паролем и вернитесь сюда для проверки.", "txt_exposed_passwords": "Скомпрометированы", "txt_reused_passwords": "Повторно используются", "txt_weak_passwords": "Слабые", "txt_passwords_checked": "Проверено", "txt_password_security_unavailable": "{count} проверок не смогли обратиться к базе утечек. Они не помечены безопасными.", "txt_password_security_not_checked": "Не проверено", "txt_password_exposed_count": "Найдено в {count} утечках", "txt_password_reused_count": "Используется {count} раз", "txt_weak_password": "Слабый пароль", "txt_no_password_risks": "Рисков паролей не найдено", "txt_open_vault": "Открыть хранилище", "txt_check_password_breach": "Проверить утечку", "txt_password_not_found_in_breaches": "Не найден в базе утечек", "txt_password_security_check_failed": "Не удалось завершить проверку утечки."
+  "nav_password_security": "Безопасность паролей", "txt_password_security": "Проверка безопасности паролей", "txt_password_security_privacy": "Пароли проверяются локально. После запуска в базу утечек передаётся только анонимный префикс хеша.", "txt_check_password_security": "Начать проверку", "txt_checking_password_security": "Проверка", "txt_recheck_password_security": "Проверить снова", "txt_password_security_ready": "Ваше хранилище готово к проверке безопасности.", "txt_password_security_no_login": "Нет паролей для входа, доступных для проверки.", "txt_password_security_manual": "Проверка запускается только по вашему выбору. Результаты остаются только на этой странице.", "txt_password_security_no_login_help": "Добавьте запись входа с паролем и вернитесь сюда для проверки.", "txt_exposed_passwords": "Скомпрометированы", "txt_reused_passwords": "Повторно используются", "txt_weak_passwords": "Слабые", "txt_passwords_checked": "Проверено", "txt_password_security_unavailable": "{count} проверок не смогли обратиться к базе утечек. Они не помечены безопасными.", "txt_password_security_not_checked": "Не проверено", "txt_password_exposed_count": "Найдено в {count} утечках", "txt_password_reused_count": "Используется {count} раз", "txt_weak_password": "Слабый пароль", "txt_no_password_risks": "Рисков паролей не найдено", "txt_open_vault": "Открыть хранилище", "txt_check_password_breach": "Проверить утечку", "txt_password_not_found_in_breaches": "Не найден в базе утечек", "txt_password_security_check_failed": "Не удалось завершить проверку утечки.",
+  "nav_remote_sync": "Синхронизация удалённого хранилища",
+  "txt_remote_sync_help_intro": "Добавляйте другие хранилища NodeWarden (совместимые с Bitwarden) как источники синхронизации — их записи будут подтянуты в это хранилище. Один и тот же аккаунт с тем же мастер-паролем сможет видеть одни и те же пароли на нескольких узлах.",
+  "txt_remote_sync_help_key": "Записи остаются зашифрованными end-to-end: только аккаунт, созданный с тем же мастер-паролем, сможет расшифровать синхронизированные записи. Если локальный аккаунт с таким же именем уже существует с другим ключом, данные паролей пропускаются с предупреждением, а не повреждают локальное хранилище.",
+  "txt_remote_sync_add_source": "Добавить удалённое хранилище",
+  "txt_remote_sync_url": "URL хранилища",
+  "txt_remote_sync_email": "Электронная почта",
+  "txt_remote_sync_master_password": "Мастер-пароль",
+  "txt_remote_sync_interval": "Интервал синхронизации (минуты)",
+  "txt_remote_sync_form_required": "Требуются URL, почта и мастер-пароль.",
+  "txt_remote_sync_adding": "Добавление…",
+  "txt_remote_sync_add": "Добавить и синхронизировать",
+  "txt_remote_sync_added": "Удалённое хранилище добавлено и синхронизировано.",
+  "txt_remote_sync_added_with_error": "Хранилище добавлено, но первая синхронизация не удалась. См. ошибку ниже или попробуйте снова.",
+  "txt_remote_sync_result_ok": "Первая синхронизация завершена: добавлено {added}, обновлено {updated}.",
+  "txt_remote_sync_result_error": "Первая синхронизация не удалась: {error}",
+  "txt_remote_sync_sources": "Источники синхронизации",
+  "txt_remote_sync_no_sources": "Удалённые хранилища ещё не настроены.",
+  "txt_remote_sync_status_idle": "Ожидание",
+  "txt_remote_sync_status_syncing": "Синхронизация",
+  "txt_remote_sync_status_ok": "ОК",
+  "txt_remote_sync_status_error": "Ошибка",
+  "txt_remote_sync_every_minutes": "Каждые {minutes} мин",
+  "txt_remote_sync_last_sync": "Последняя синхронизация: {time}",
+  "txt_remote_sync_stats": "Последний результат: добавлено {added}, обновлено {updated}, папок {folders}",
+  "txt_remote_sync_sync_now": "Синхронизировать сейчас",
+  "txt_remote_sync_syncing": "Синхронизация…",
+  "txt_remote_sync_synced": "Синхронизация завершена.",
+  "txt_remote_sync_sync_failed": "Синхронизация не удалась.",
+  "txt_remote_sync_disable": "Отключить",
+  "txt_remote_sync_enable": "Включить",
+  "txt_remote_sync_delete_confirm_title": "Удалить источник синхронизации",
+  "txt_remote_sync_delete_confirm_body": "Удалить это хранилище из списка синхронизации? Уже синхронизированные записи останутся в локальном хранилище.",
+  "txt_remote_sync_list_failed": "Не удалось загрузить источники синхронизации.",
+  "txt_remote_sync_create_failed": "Не удалось добавить удалённое хранилище.",
+  "txt_remote_sync_update_failed": "Не удалось обновить источник синхронизации.",
+  "txt_remote_sync_trigger_failed": "Не удалось запустить синхронизацию.",
+  "txt_remote_sync_delete_failed": "Не удалось удалить источник синхронизации.",
+  "txt_never": "Никогда",
+
 });
 
 Object.assign(ru, { "txt_password_security_last_checked": "Последняя проверка: {value}" });

@@ -72,6 +72,20 @@ export interface UserDomainSettings {
   updatedAt: string | null;
 }
 
+export interface RemoteSyncSource {
+  id: string;
+  url: string;
+  email: string;
+  encryptedPasswordHash: string;
+  syncIntervalMinutes: number;
+  enabled: boolean;
+  status: 'idle' | 'syncing' | 'ok' | 'error';
+  lastSyncAt: string | null;
+  lastResult: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CustomEquivalentDomain {
   id: string;
   domains: string[];

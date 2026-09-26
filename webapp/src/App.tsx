@@ -120,6 +120,7 @@ const APP_ROUTE_PATHS = [
   LEGACY_DEVICE_MANAGEMENT_ROUTE,
   DEVICE_MANAGEMENT_ROUTE,
   '/backup',
+  '/remote-sync',
   '/settings',
   SETTINGS_ACCOUNT_ROUTE,
   SETTINGS_DOMAIN_RULES_ROUTE,
@@ -1968,6 +1969,7 @@ export default function App() {
     if (location === LEGACY_DEVICE_MANAGEMENT_ROUTE || location === DEVICE_MANAGEMENT_ROUTE) return t('nav_device_management');
     if (location === SETTINGS_DOMAIN_RULES_ROUTE) return t('nav_domain_rules');
     if (location === '/backup') return t('nav_backup_strategy');
+    if (location === '/remote-sync') return t('nav_remote_sync');
     if (isImportRoute) return t('nav_import_export');
     if (location === SETTINGS_ACCOUNT_ROUTE) return t('nav_account_settings');
     if (location === SETTINGS_HOME_ROUTE) return t('txt_settings');
@@ -2001,7 +2003,7 @@ export default function App() {
   }, [phase, isImportHashRoute, location, navigate]);
 
   useEffect(() => {
-    if (phase === 'app' && !isAdminProfile(profile) && (location === '/backup' || location === '/logs') && !profileQuery.isFetching) {
+    if (phase === 'app' && !isAdminProfile(profile) && (location === '/backup' || location === '/logs' || location === '/remote-sync') && !profileQuery.isFetching) {
       navigate('/vault');
     }
   }, [phase, profile?.role, profileQuery.isFetching, location, navigate]);

@@ -1453,7 +1453,46 @@ const es: Record<string, string> = {
 };
 
 Object.assign(es, {
-  "nav_password_security": "Seguridad de contraseñas", "txt_password_security": "Comprobación de seguridad", "txt_password_security_privacy": "Las contraseñas se comprueban localmente. Solo se envía un prefijo de hash anónimo a la base de filtraciones al iniciar la comprobación.", "txt_check_password_security": "Iniciar comprobación", "txt_checking_password_security": "Comprobando", "txt_recheck_password_security": "Comprobar de nuevo", "txt_password_security_ready": "Tu bóveda está lista para una comprobación de seguridad.", "txt_password_security_no_login": "No hay contraseñas de inicio de sesión para comprobar.", "txt_password_security_manual": "La comprobación solo empieza cuando la eliges. Los resultados se conservan solo en esta página.", "txt_password_security_no_login_help": "Añade un inicio de sesión con contraseña y vuelve aquí para comprobarlo.", "txt_exposed_passwords": "Filtradas", "txt_reused_passwords": "Reutilizadas", "txt_weak_passwords": "Débiles", "txt_passwords_checked": "Comprobadas", "txt_password_security_unavailable": "{count} comprobaciones no pudieron acceder a la base de filtraciones. No se marcan como seguras.", "txt_password_security_not_checked": "Sin comprobar", "txt_password_exposed_count": "Encontrada en {count} filtraciones", "txt_password_reused_count": "Usada {count} veces", "txt_weak_password": "Contraseña débil", "txt_no_password_risks": "No se encontraron riesgos de contraseña", "txt_open_vault": "Abrir bóveda", "txt_check_password_breach": "Comprobar filtración", "txt_password_not_found_in_breaches": "No encontrada en la base de filtraciones", "txt_password_security_check_failed": "No se pudo completar la comprobación de filtraciones."
+  "nav_password_security": "Seguridad de contraseñas", "txt_password_security": "Comprobación de seguridad", "txt_password_security_privacy": "Las contraseñas se comprueban localmente. Solo se envía un prefijo de hash anónimo a la base de filtraciones al iniciar la comprobación.", "txt_check_password_security": "Iniciar comprobación", "txt_checking_password_security": "Comprobando", "txt_recheck_password_security": "Comprobar de nuevo", "txt_password_security_ready": "Tu bóveda está lista para una comprobación de seguridad.", "txt_password_security_no_login": "No hay contraseñas de inicio de sesión para comprobar.", "txt_password_security_manual": "La comprobación solo empieza cuando la eliges. Los resultados se conservan solo en esta página.", "txt_password_security_no_login_help": "Añade un inicio de sesión con contraseña y vuelve aquí para comprobarlo.", "txt_exposed_passwords": "Filtradas", "txt_reused_passwords": "Reutilizadas", "txt_weak_passwords": "Débiles", "txt_passwords_checked": "Comprobadas", "txt_password_security_unavailable": "{count} comprobaciones no pudieron acceder a la base de filtraciones. No se marcan como seguras.", "txt_password_security_not_checked": "Sin comprobar", "txt_password_exposed_count": "Encontrada en {count} filtraciones", "txt_password_reused_count": "Usada {count} veces", "txt_weak_password": "Contraseña débil", "txt_no_password_risks": "No se encontraron riesgos de contraseña", "txt_open_vault": "Abrir bóveda", "txt_check_password_breach": "Comprobar filtración", "txt_password_not_found_in_breaches": "No encontrada en la base de filtraciones", "txt_password_security_check_failed": "No se pudo completar la comprobación de filtraciones.",
+  "nav_remote_sync": "Sincronización de bóveda remota",
+  "txt_remote_sync_help_intro": "Añade otras bóvedas NodeWarden (compatibles con Bitwarden) como fuentes de sincronización; sus entradas se traen a esta bóveda. La misma cuenta con la misma contraseña maestra verá los mismos datos en varios nodos.",
+  "txt_remote_sync_help_key": "Las entradas permanecen cifradas de extremo a extremo: solo la misma cuenta creada con la misma contraseña maestra puede descifrar los elementos sincronizados. Si ya existe una cuenta local con una clave distinta, se omiten los datos con un aviso en lugar de dañar la bóveda local.",
+  "txt_remote_sync_add_source": "Añadir bóveda remota",
+  "txt_remote_sync_url": "URL de la bóveda",
+  "txt_remote_sync_email": "Correo electrónico",
+  "txt_remote_sync_master_password": "Contraseña maestra",
+  "txt_remote_sync_interval": "Intervalo de sincronización (minutos)",
+  "txt_remote_sync_form_required": "Se requieren URL, correo y contraseña maestra.",
+  "txt_remote_sync_adding": "Añadiendo…",
+  "txt_remote_sync_add": "Añadir y sincronizar ahora",
+  "txt_remote_sync_added": "Bóveda remota añadida y sincronizada.",
+  "txt_remote_sync_added_with_error": "Bóveda añadida, pero la primera sincronización falló. Vea el error o inténtelo de nuevo.",
+  "txt_remote_sync_result_ok": "Primera sincronización: {added} añadidas, {updated} actualizadas.",
+  "txt_remote_sync_result_error": "La primera sincronización falló: {error}",
+  "txt_remote_sync_sources": "Fuentes de sincronización",
+  "txt_remote_sync_no_sources": "Aún no hay bóvedas remotas configuradas.",
+  "txt_remote_sync_status_idle": "Inactiva",
+  "txt_remote_sync_status_syncing": "Sincronizando",
+  "txt_remote_sync_status_ok": "OK",
+  "txt_remote_sync_status_error": "Error",
+  "txt_remote_sync_every_minutes": "Cada {minutes} min",
+  "txt_remote_sync_last_sync": "Última sincronización: {time}",
+  "txt_remote_sync_stats": "Último resultado: {added} añadidas, {updated} actualizadas, {folders} carpetas",
+  "txt_remote_sync_sync_now": "Sincronizar ahora",
+  "txt_remote_sync_syncing": "Sincronizando…",
+  "txt_remote_sync_synced": "Sincronización completada.",
+  "txt_remote_sync_sync_failed": "La sincronización falló.",
+  "txt_remote_sync_disable": "Desactivar",
+  "txt_remote_sync_enable": "Activar",
+  "txt_remote_sync_delete_confirm_title": "Quitar fuente de sincronización",
+  "txt_remote_sync_delete_confirm_body": "¿Quitar esta bóveda remota de la lista? Las entradas ya sincronizadas se conservan.",
+  "txt_remote_sync_list_failed": "No se pudieron cargar las fuentes de sincronización.",
+  "txt_remote_sync_create_failed": "No se pudo añadir la bóveda remota.",
+  "txt_remote_sync_update_failed": "No se pudo actualizar la fuente de sincronización.",
+  "txt_remote_sync_trigger_failed": "No se pudo iniciar la sincronización.",
+  "txt_remote_sync_delete_failed": "No se pudo quitar la fuente de sincronización.",
+  "txt_never": "Nunca",
+
 });
 
 Object.assign(es, { "txt_password_security_last_checked": "Última comprobación: {value}" });

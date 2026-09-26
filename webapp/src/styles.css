@@ -1491,3 +1491,62 @@ input[type='file'].input::file-selector-button {
     font-weight: 800;
   }
 }
+
+/* Remote vault sync page */
+.remote-sync-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border, rgba(127, 127, 127, 0.15));
+}
+.remote-sync-row:last-child {
+  border-bottom: 0;
+}
+.remote-sync-row-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.remote-sync-row-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.remote-sync-row-icon {
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+.remote-sync-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.remote-sync-status-idle { color: var(--muted); background: rgba(127, 127, 127, 0.12); }
+.remote-sync-status-syncing { color: #b58900; background: rgba(181, 137, 0, 0.14); }
+.remote-sync-status-ok { color: #2e9e5b; background: rgba(46, 158, 91, 0.14); }
+.remote-sync-status-error { color: #c0392b; background: rgba(192, 57, 43, 0.14); }
+.remote-sync-actions {
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.local-note {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.local-note-success {
+  color: #2e9e5b;
+  background: rgba(46, 158, 91, 0.1);
+}
+.local-note-warn {
+  color: #8a6d3b;
+  background: rgba(181, 137, 0, 0.12);
+}

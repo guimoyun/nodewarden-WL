@@ -1453,7 +1453,46 @@ const de: Record<string, string> = {
 };
 
 Object.assign(de, {
-  "nav_password_security": "Passwortsicherheit", "txt_password_security": "Passwort-Sicherheitsprüfung", "txt_password_security_privacy": "Passwörter werden lokal geprüft. Erst nach dem Start wird nur ein anonymer Hash-Präfix an die Leckdatenbank gesendet.", "txt_check_password_security": "Prüfung starten", "txt_checking_password_security": "Prüfung läuft", "txt_recheck_password_security": "Erneut prüfen", "txt_password_security_ready": "Ihr Tresor ist für eine Sicherheitsprüfung bereit.", "txt_password_security_no_login": "Es gibt keine Login-Passwörter zu prüfen.", "txt_password_security_manual": "Die Prüfung startet nur auf Ihre Anfrage. Ergebnisse bleiben nur auf dieser Seite.", "txt_password_security_no_login_help": "Fügen Sie einen Login-Eintrag mit Passwort hinzu und prüfen Sie ihn anschließend hier.", "txt_exposed_passwords": "Geleakt", "txt_reused_passwords": "Wiederverwendet", "txt_weak_passwords": "Schwach", "txt_passwords_checked": "Geprüft", "txt_password_security_unavailable": "{count} Passwortprüfungen konnten die Leckdatenbank nicht erreichen. Sie werden nicht als sicher markiert.", "txt_password_security_not_checked": "Nicht geprüft", "txt_password_exposed_count": "In {count} Lecks gefunden", "txt_password_reused_count": "{count}-mal verwendet", "txt_weak_password": "Schwaches Passwort", "txt_no_password_risks": "Keine Passwortrisiken gefunden", "txt_open_vault": "Tresor öffnen", "txt_check_password_breach": "Leck prüfen", "txt_password_not_found_in_breaches": "Nicht in der Leckdatenbank gefunden", "txt_password_security_check_failed": "Die Leckprüfung konnte nicht abgeschlossen werden."
+  "nav_password_security": "Passwortsicherheit", "txt_password_security": "Passwort-Sicherheitsprüfung", "txt_password_security_privacy": "Passwörter werden lokal geprüft. Erst nach dem Start wird nur ein anonymer Hash-Präfix an die Leckdatenbank gesendet.", "txt_check_password_security": "Prüfung starten", "txt_checking_password_security": "Prüfung läuft", "txt_recheck_password_security": "Erneut prüfen", "txt_password_security_ready": "Ihr Tresor ist für eine Sicherheitsprüfung bereit.", "txt_password_security_no_login": "Es gibt keine Login-Passwörter zu prüfen.", "txt_password_security_manual": "Die Prüfung startet nur auf Ihre Anfrage. Ergebnisse bleiben nur auf dieser Seite.", "txt_password_security_no_login_help": "Fügen Sie einen Login-Eintrag mit Passwort hinzu und prüfen Sie ihn anschließend hier.", "txt_exposed_passwords": "Geleakt", "txt_reused_passwords": "Wiederverwendet", "txt_weak_passwords": "Schwach", "txt_passwords_checked": "Geprüft", "txt_password_security_unavailable": "{count} Passwortprüfungen konnten die Leckdatenbank nicht erreichen. Sie werden nicht als sicher markiert.", "txt_password_security_not_checked": "Nicht geprüft", "txt_password_exposed_count": "In {count} Lecks gefunden", "txt_password_reused_count": "{count}-mal verwendet", "txt_weak_password": "Schwaches Passwort", "txt_no_password_risks": "Keine Passwortrisiken gefunden", "txt_open_vault": "Tresor öffnen", "txt_check_password_breach": "Leck prüfen", "txt_password_not_found_in_breaches": "Nicht in der Leckdatenbank gefunden", "txt_password_security_check_failed": "Die Leckprüfung konnte nicht abgeschlossen werden.",
+  "nav_remote_sync": "Remote-Vault-Synchronisierung",
+  "txt_remote_sync_help_intro": "Fügen Sie weitere NodeWarden- (oder Bitwarden-kompatible) Tresore als Synchronisierungsquellen hinzu; deren Einträge werden in diesen Tresor übernommen. Dasselbe Konto mit demselben Master-Passwort sieht dieselben Passwörter auf mehreren Knoten.",
+  "txt_remote_sync_help_key": "Einträge bleiben Ende-zu-Ende verschlüsselt: Nur dasselbe Konto, das mit demselben Master-Passwort erstellt wurde, kann synchronisierte Einträge entschlüsseln. Existiert bereits ein lokales Konto mit anderem Schlüssel, werden die Daten mit einer Warnung übersprungen, statt den lokalen Tresor zu beschädigen.",
+  "txt_remote_sync_add_source": "Remote-Tresor hinzufügen",
+  "txt_remote_sync_url": "Tresor-URL",
+  "txt_remote_sync_email": "E-Mail",
+  "txt_remote_sync_master_password": "Master-Passwort",
+  "txt_remote_sync_interval": "Synchronisierungsintervall (Minuten)",
+  "txt_remote_sync_form_required": "URL, E-Mail und Master-Passwort sind erforderlich.",
+  "txt_remote_sync_adding": "Hinzufügen…",
+  "txt_remote_sync_add": "Hinzufügen und jetzt synchronisieren",
+  "txt_remote_sync_added": "Remote-Tresor hinzugefügt und synchronisiert.",
+  "txt_remote_sync_added_with_error": "Tresor hinzugefügt, aber die erste Synchronisierung schlug fehl. Siehe Fehler unten oder versuchen Sie es erneut.",
+  "txt_remote_sync_result_ok": "Erste Synchronisierung abgeschlossen: {added} hinzugefügt, {updated} aktualisiert.",
+  "txt_remote_sync_result_error": "Erste Synchronisierung fehlgeschlagen: {error}",
+  "txt_remote_sync_sources": "Synchronisierungsquellen",
+  "txt_remote_sync_no_sources": "Noch keine Remote-Tresore konfiguriert.",
+  "txt_remote_sync_status_idle": "Inaktiv",
+  "txt_remote_sync_status_syncing": "Synchronisiert",
+  "txt_remote_sync_status_ok": "OK",
+  "txt_remote_sync_status_error": "Fehler",
+  "txt_remote_sync_every_minutes": "Alle {minutes} Min.",
+  "txt_remote_sync_last_sync": "Letzte Synchronisierung: {time}",
+  "txt_remote_sync_stats": "Letztes Ergebnis: {added} hinzugefügt, {updated} aktualisiert, {folders} Ordner",
+  "txt_remote_sync_sync_now": "Jetzt synchronisieren",
+  "txt_remote_sync_syncing": "Synchronisiert…",
+  "txt_remote_sync_synced": "Synchronisierung abgeschlossen.",
+  "txt_remote_sync_sync_failed": "Synchronisierung fehlgeschlagen.",
+  "txt_remote_sync_disable": "Deaktivieren",
+  "txt_remote_sync_enable": "Aktivieren",
+  "txt_remote_sync_delete_confirm_title": "Synchronisierungsquelle entfernen",
+  "txt_remote_sync_delete_confirm_body": "Diesen Remote-Tresor aus der Liste entfernen? Bereits synchronisierte Einträge bleiben erhalten.",
+  "txt_remote_sync_list_failed": "Synchronisierungsquellen konnten nicht geladen werden.",
+  "txt_remote_sync_create_failed": "Remote-Tresor konnte nicht hinzugefügt werden.",
+  "txt_remote_sync_update_failed": "Synchronisierungsquelle konnte nicht aktualisiert werden.",
+  "txt_remote_sync_trigger_failed": "Synchronisierung konnte nicht gestartet werden.",
+  "txt_remote_sync_delete_failed": "Synchronisierungsquelle konnte nicht entfernt werden.",
+  "txt_never": "Nie",
+
 });
 
 Object.assign(de, { "txt_password_security_last_checked": "Zuletzt überprüft: {value}" });

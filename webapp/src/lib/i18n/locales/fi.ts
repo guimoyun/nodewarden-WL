@@ -1453,7 +1453,46 @@ const fi: Record<string, string> = {
 };
 
 Object.assign(fi, {
-  "nav_password_security": "Salasanasuojaus", "txt_password_security": "Salasanojen turvatarkistus", "txt_password_security_privacy": "Salasanat tarkistetaan paikallisesti. Vain anonyymi hajautteen alku lähetetään vuototietokantaan tarkistuksen alkaessa.", "txt_check_password_security": "Aloita tarkistus", "txt_checking_password_security": "Tarkistetaan", "txt_recheck_password_security": "Tarkista uudelleen", "txt_password_security_ready": "Holvisi on valmis turvatarkistukseen.", "txt_password_security_no_login": "Tarkistettavia kirjautumissalasanoja ei ole.", "txt_password_security_manual": "Tarkistus käynnistyy vain valinnastasi. Tulokset säilyvät vain tällä sivulla.", "txt_password_security_no_login_help": "Lisää kirjautuminen salasanalla ja palaa sitten tarkistamaan se.", "txt_exposed_passwords": "Vuotaneet", "txt_reused_passwords": "Uudelleenkäytetyt", "txt_weak_passwords": "Heikot", "txt_passwords_checked": "Tarkistettu", "txt_password_security_unavailable": "{count} salasanatarkistusta ei tavoittanut vuototietokantaa. Niitä ei merkitä turvallisiksi.", "txt_password_security_not_checked": "Ei tarkistettu", "txt_password_exposed_count": "Löytyi {count} vuodosta", "txt_password_reused_count": "Käytetty {count} kertaa", "txt_weak_password": "Heikko salasana", "txt_no_password_risks": "Salasanariskejä ei löytynyt", "txt_open_vault": "Avaa holvi", "txt_check_password_breach": "Tarkista vuoto", "txt_password_not_found_in_breaches": "Ei löytynyt vuototietokannasta", "txt_password_security_check_failed": "Vuototarkistusta ei voitu suorittaa."
+  "nav_password_security": "Salasanasuojaus", "txt_password_security": "Salasanojen turvatarkistus", "txt_password_security_privacy": "Salasanat tarkistetaan paikallisesti. Vain anonyymi hajautteen alku lähetetään vuototietokantaan tarkistuksen alkaessa.", "txt_check_password_security": "Aloita tarkistus", "txt_checking_password_security": "Tarkistetaan", "txt_recheck_password_security": "Tarkista uudelleen", "txt_password_security_ready": "Holvisi on valmis turvatarkistukseen.", "txt_password_security_no_login": "Tarkistettavia kirjautumissalasanoja ei ole.", "txt_password_security_manual": "Tarkistus käynnistyy vain valinnastasi. Tulokset säilyvät vain tällä sivulla.", "txt_password_security_no_login_help": "Lisää kirjautuminen salasanalla ja palaa sitten tarkistamaan se.", "txt_exposed_passwords": "Vuotaneet", "txt_reused_passwords": "Uudelleenkäytetyt", "txt_weak_passwords": "Heikot", "txt_passwords_checked": "Tarkistettu", "txt_password_security_unavailable": "{count} salasanatarkistusta ei tavoittanut vuototietokantaa. Niitä ei merkitä turvallisiksi.", "txt_password_security_not_checked": "Ei tarkistettu", "txt_password_exposed_count": "Löytyi {count} vuodosta", "txt_password_reused_count": "Käytetty {count} kertaa", "txt_weak_password": "Heikko salasana", "txt_no_password_risks": "Salasanariskejä ei löytynyt", "txt_open_vault": "Avaa holvi", "txt_check_password_breach": "Tarkista vuoto", "txt_password_not_found_in_breaches": "Ei löytynyt vuototietokannasta", "txt_password_security_check_failed": "Vuototarkistusta ei voitu suorittaa.",
+  "nav_remote_sync": "Etäsalausavainten synkronointi",
+  "txt_remote_sync_help_intro": "Lisää muita NodeWarden- (tai Bitwarden-yhteensopivia) salasanavarastoja synkronointilähteiksi; niiden tietueet tuodaan tähän varastoon. Sama tili samalla pääsalasanalla näkee samat salasanat useissa solmuissa.",
+  "txt_remote_sync_help_key": "Tietueet pysyvät päästä päähän salattuina: vain samalla pääsalasanalla luotu sama tili voi purkaa synkronoidut tietueet. Jos paikallinen tili on jo olemassa eri avaimella, salasanatiedot ohitetaan varoituksella eikä paikallista varastoa vahingoiteta.",
+  "txt_remote_sync_add_source": "Lisää etävarasto",
+  "txt_remote_sync_url": "Varaston URL",
+  "txt_remote_sync_email": "Sähköposti",
+  "txt_remote_sync_master_password": "Pääsalasana",
+  "txt_remote_sync_interval": "Synkronointiväli (minuuttia)",
+  "txt_remote_sync_form_required": "URL, sähköposti ja pääsalasana ovat pakollisia.",
+  "txt_remote_sync_adding": "Lisätään…",
+  "txt_remote_sync_add": "Lisää ja synkronoi nyt",
+  "txt_remote_sync_added": "Etävarasto lisätty ja synkronoitu.",
+  "txt_remote_sync_added_with_error": "Varasto lisätty, mutta ensimmäinen synkronointi epäonnistui. Katso virhettä tai yritä uudelleen.",
+  "txt_remote_sync_result_ok": "Ensimmäinen synkronointi valmis: {added} lisätty, {updated} päivitetty.",
+  "txt_remote_sync_result_error": "Ensimmäinen synkronointi epäonnistui: {error}",
+  "txt_remote_sync_sources": "Synkronointilähteet",
+  "txt_remote_sync_no_sources": "Etävarastoja ei ole vielä määritetty.",
+  "txt_remote_sync_status_idle": "Valmiustila",
+  "txt_remote_sync_status_syncing": "Synkronoidaan",
+  "txt_remote_sync_status_ok": "OK",
+  "txt_remote_sync_status_error": "Virhe",
+  "txt_remote_sync_every_minutes": "Joka {minutes} min",
+  "txt_remote_sync_last_sync": "Viimeisin synkronointi: {time}",
+  "txt_remote_sync_stats": "Viimeisin tulos: {added} lisätty, {updated} päivitetty, {folders} kansiota",
+  "txt_remote_sync_sync_now": "Synkronoi nyt",
+  "txt_remote_sync_syncing": "Synkronoidaan…",
+  "txt_remote_sync_synced": "Synkronointi valmis.",
+  "txt_remote_sync_sync_failed": "Synkronointi epäonnistui.",
+  "txt_remote_sync_disable": "Poista käytöstä",
+  "txt_remote_sync_enable": "Ota käyttöön",
+  "txt_remote_sync_delete_confirm_title": "Poista synkronointilähde",
+  "txt_remote_sync_delete_confirm_body": "Poistetaanko tämä etävarasto luettelosta? Jo synkronoidut tietueet säilyvät.",
+  "txt_remote_sync_list_failed": "Synkronointilähteiden lataus epäonnistui.",
+  "txt_remote_sync_create_failed": "Etävaraston lisääminen epäonnistui.",
+  "txt_remote_sync_update_failed": "Synkronointilähteen päivitys epäonnistui.",
+  "txt_remote_sync_trigger_failed": "Synkronoinnin käynnistys epäonnistui.",
+  "txt_remote_sync_delete_failed": "Synkronointilähteen poisto epäonnistui.",
+  "txt_never": "Ei koskaan",
+
 });
 
 Object.assign(fi, { "txt_password_security_last_checked": "Tarkistettu viimeksi: {value}" });

@@ -11,8 +11,10 @@ import { parseLocalConfig, createLocalEnv, type LocalConfig } from './env';
 import { startLocalServer } from './server';
 import { installLocalCaches } from './cache';
 import { runScheduledBackupIfDue } from '../src/handlers/backup';
+import { runScheduledRemoteSyncIfDue } from '../src/services/remote-sync';
 
 const BACKUP_INTERVAL_MS = 5 * 60 * 1000;
+const REMOTE_SYNC_CHECK_INTERVAL_MS = 60 * 1000;
 
 async function main(): Promise<void> {
   // Runtime marker so Cloudflare-only semantics can adapt (see notifications-hub.ts).
@@ -47,9 +49,22 @@ async function main(): Promise<void> {
   }, BACKUP_INTERVAL_MS);
   timer.unref?.();
 
+  // Scheduled remote vault sync: each source runs at its own interval.
+  const remoteSyncTimer = setInterval(async () => {
+    try {
+      await runScheduledRemoteSyncIfDue(bundle.env).catch((error) => {
+        console.error('[nodewarden-local] scheduled remote sync failed:', error);
+      });
+    } catch (error) {
+      console.error('[nodewarden-local] scheduled remote sync error:', error);
+    }
+  }, REMOTE_SYNC_CHECK_INTERVAL_MS);
+  remoteSyncTimer.unref?.();
+
   const shutdown = async () => {
     console.log('\n[nodewarden-local] shutting down...');
     clearInterval(timer);
+    clearInterval(remoteSyncTimer);
     await new Promise<void>((resolve) => server.close(() => resolve()));
     process.exit(0);
   };

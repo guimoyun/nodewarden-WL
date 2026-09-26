@@ -32,6 +32,7 @@
 - **密码管理全家桶**：登录项 / TOTP（含 Steam）/ Secure Notes / 附件 / Send / Passkey 登录
 - **安全**：2FA（TOTP / YubiKey / Passkey）、登录审批、设备管理、多用户邀请码
 - **云备份仍可用**：WebDAV / S3 定时备份
+- **多库同步**：后台可添加其他 NodeWarden 密码库（网址 + 邮箱 + 主密码）作为同步源，把远端条目同步到本地，支持定时同步（见 README-LOCAL.md「多库同步」）
 - **9 平台开箱即用**：见下方矩阵，GitHub Actions 一键编译发布到 Releases
 
 ## 🖥️ 平台矩阵

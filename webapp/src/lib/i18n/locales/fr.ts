@@ -1453,7 +1453,46 @@ const fr: Record<string, string> = {
 };
 
 Object.assign(fr, {
-  "nav_password_security": "Sécurité des mots de passe", "txt_password_security": "Vérification de sécurité", "txt_password_security_privacy": "Les mots de passe sont vérifiés localement. Seul un préfixe de hachage anonyme est envoyé à la base de fuites après le démarrage.", "txt_check_password_security": "Lancer la vérification", "txt_checking_password_security": "Vérification", "txt_recheck_password_security": "Vérifier à nouveau", "txt_password_security_ready": "Votre coffre est prêt pour une vérification de sécurité.", "txt_password_security_no_login": "Aucun mot de passe de connexion à vérifier.", "txt_password_security_manual": "La vérification ne démarre que sur votre demande. Les résultats restent sur cette page.", "txt_password_security_no_login_help": "Ajoutez une connexion avec mot de passe, puis revenez ici pour la vérifier.", "txt_exposed_passwords": "Exposés", "txt_reused_passwords": "Réutilisés", "txt_weak_passwords": "Faibles", "txt_passwords_checked": "Vérifiés", "txt_password_security_unavailable": "{count} vérifications n'ont pas pu joindre la base de fuites. Elles ne sont pas marquées comme sûres.", "txt_password_security_not_checked": "Non vérifié", "txt_password_exposed_count": "Trouvé dans {count} fuites", "txt_password_reused_count": "Utilisé {count} fois", "txt_weak_password": "Mot de passe faible", "txt_no_password_risks": "Aucun risque de mot de passe détecté", "txt_open_vault": "Ouvrir le coffre", "txt_check_password_breach": "Vérifier la fuite", "txt_password_not_found_in_breaches": "Introuvable dans la base de fuites", "txt_password_security_check_failed": "La vérification de fuite n'a pas pu être terminée."
+  "nav_password_security": "Sécurité des mots de passe", "txt_password_security": "Vérification de sécurité", "txt_password_security_privacy": "Les mots de passe sont vérifiés localement. Seul un préfixe de hachage anonyme est envoyé à la base de fuites après le démarrage.", "txt_check_password_security": "Lancer la vérification", "txt_checking_password_security": "Vérification", "txt_recheck_password_security": "Vérifier à nouveau", "txt_password_security_ready": "Votre coffre est prêt pour une vérification de sécurité.", "txt_password_security_no_login": "Aucun mot de passe de connexion à vérifier.", "txt_password_security_manual": "La vérification ne démarre que sur votre demande. Les résultats restent sur cette page.", "txt_password_security_no_login_help": "Ajoutez une connexion avec mot de passe, puis revenez ici pour la vérifier.", "txt_exposed_passwords": "Exposés", "txt_reused_passwords": "Réutilisés", "txt_weak_passwords": "Faibles", "txt_passwords_checked": "Vérifiés", "txt_password_security_unavailable": "{count} vérifications n'ont pas pu joindre la base de fuites. Elles ne sont pas marquées comme sûres.", "txt_password_security_not_checked": "Non vérifié", "txt_password_exposed_count": "Trouvé dans {count} fuites", "txt_password_reused_count": "Utilisé {count} fois", "txt_weak_password": "Mot de passe faible", "txt_no_password_risks": "Aucun risque de mot de passe détecté", "txt_open_vault": "Ouvrir le coffre", "txt_check_password_breach": "Vérifier la fuite", "txt_password_not_found_in_breaches": "Introuvable dans la base de fuites", "txt_password_security_check_failed": "La vérification de fuite n'a pas pu être terminée.",
+  "nav_remote_sync": "Synchronisation de coffre distant",
+  "txt_remote_sync_help_intro": "Ajoutez d'autres coffres NodeWarden (compatibles Bitwarden) comme sources de synchronisation ; leurs entrées sont importées dans ce coffre. Le même compte avec le même mot de passe principal verra les mêmes mots de passe sur plusieurs nœuds.",
+  "txt_remote_sync_help_key": "Les entrées restent chiffrées de bout en bout : seul le même compte créé avec le même mot de passe principal peut déchiffrer les éléments synchronisés. Si un compte local existe déjà avec une clé différente, les données sont ignorées avec un avertissement au lieu d'endommager le coffre local.",
+  "txt_remote_sync_add_source": "Ajouter un coffre distant",
+  "txt_remote_sync_url": "URL du coffre",
+  "txt_remote_sync_email": "E-mail",
+  "txt_remote_sync_master_password": "Mot de passe principal",
+  "txt_remote_sync_interval": "Intervalle de synchronisation (minutes)",
+  "txt_remote_sync_form_required": "URL, e-mail et mot de passe principal sont requis.",
+  "txt_remote_sync_adding": "Ajout…",
+  "txt_remote_sync_add": "Ajouter et synchroniser maintenant",
+  "txt_remote_sync_added": "Coffre distant ajouté et synchronisé.",
+  "txt_remote_sync_added_with_error": "Coffre ajouté, mais la première synchronisation a échoué. Voir l'erreur ci-dessous ou réessayez.",
+  "txt_remote_sync_result_ok": "Première synchronisation terminée : {added} ajoutées, {updated} mises à jour.",
+  "txt_remote_sync_result_error": "La première synchronisation a échoué : {error}",
+  "txt_remote_sync_sources": "Sources de synchronisation",
+  "txt_remote_sync_no_sources": "Aucun coffre distant configuré pour le moment.",
+  "txt_remote_sync_status_idle": "Inactif",
+  "txt_remote_sync_status_syncing": "Synchronisation",
+  "txt_remote_sync_status_ok": "OK",
+  "txt_remote_sync_status_error": "Erreur",
+  "txt_remote_sync_every_minutes": "Toutes les {minutes} min",
+  "txt_remote_sync_last_sync": "Dernière synchronisation : {time}",
+  "txt_remote_sync_stats": "Dernier résultat : {added} ajoutées, {updated} mises à jour, {folders} dossiers",
+  "txt_remote_sync_sync_now": "Synchroniser maintenant",
+  "txt_remote_sync_syncing": "Synchronisation…",
+  "txt_remote_sync_synced": "Synchronisation terminée.",
+  "txt_remote_sync_sync_failed": "La synchronisation a échoué.",
+  "txt_remote_sync_disable": "Désactiver",
+  "txt_remote_sync_enable": "Activer",
+  "txt_remote_sync_delete_confirm_title": "Supprimer la source de synchronisation",
+  "txt_remote_sync_delete_confirm_body": "Retirer ce coffre distant de la liste ? Les entrées déjà synchronisées restent dans le coffre local.",
+  "txt_remote_sync_list_failed": "Impossible de charger les sources de synchronisation.",
+  "txt_remote_sync_create_failed": "Impossible d'ajouter le coffre distant.",
+  "txt_remote_sync_update_failed": "Impossible de mettre à jour la source de synchronisation.",
+  "txt_remote_sync_trigger_failed": "Impossible de démarrer la synchronisation.",
+  "txt_remote_sync_delete_failed": "Impossible de supprimer la source de synchronisation.",
+  "txt_never": "Jamais",
+
 });
 
 Object.assign(fr, { "txt_password_security_last_checked": "Dernière vérification : {value}" });

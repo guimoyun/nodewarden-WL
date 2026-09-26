@@ -13,6 +13,7 @@ import {
   handleAdminClearAuditLogs,
 } from './handlers/admin';
 import { handleAdminBackupRoute } from './router-admin-backup';
+import { handleAdminRemoteSyncRoute } from './router-admin-remote-sync';
 import { errorResponse } from './utils/response';
 
 function isKnownAdminPath(path: string): boolean {
@@ -22,6 +23,7 @@ function isKnownAdminPath(path: string): boolean {
     path === '/api/admin/logs/settings' ||
     path === '/api/admin/invites' ||
     path.startsWith('/api/admin/backup') ||
+    path.startsWith('/api/admin/remote-sync') ||
     /^\/api\/admin\/invites\/[^/]+$/i.test(path) ||
     /^\/api\/admin\/users\/[a-f0-9-]+(?:\/status)?$/i.test(path)
   );
@@ -65,6 +67,9 @@ export async function handleAdminRoute(
 
   const adminBackupResponse = await handleAdminBackupRoute(request, env, actorUser, path, method);
   if (adminBackupResponse) return adminBackupResponse;
+
+  const adminRemoteSyncResponse = await handleAdminRemoteSyncRoute(request, env, actorUser, path, method);
+  if (adminRemoteSyncResponse) return adminRemoteSyncResponse;
 
   if (path === '/api/admin/invites') {
     if (method === 'GET') return handleAdminListInvites(request, env, actorUser);
