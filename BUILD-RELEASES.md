@@ -1,17 +1,17 @@
 # NodeWarden Local — 跨平台构建与发布
 
-> **适用版本：v1.8.0-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
+> **适用版本：v1.9.1-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
 
-NodeWarden 本地化版可编译为 **10 个平台/架构**的单文件可执行程序。所有平台的业务代码完全同源
+NodeWarden 本地化版可编译为 **12 个平台/架构**的单文件可执行程序。所有平台的业务代码完全同源
 （单个平台无关的 SEA blob），差异仅在注入载体（对应平台的 Node v22.23.2 运行时）。
 
 ## 〇、版本号（与程序版本对应）
 
 | 位置 | 取值 | 说明 |
 | --- | --- | --- |
-| `package.json` `version` | `1.8.0-local` | npm 包版本，**文档版本基准** |
-| 二进制内置版本（`__APP_VERSION__`） | `v1.8.0-local` | esbuild `--define` 注入；未注入时回退同值 |
-| CI 构建输入 `version`（Release 标签） | 默认 `v1.8.0-local` | 手动触发时填写新标签（如 `v1.1.0`），必须**高于**二进制内置版本才会被「一键更新」识别 |
+| `package.json` `version` | `1.9.1-local` | npm 包版本，**文档版本基准** |
+| 二进制内置版本（`__APP_VERSION__`） | `v1.9.1-local` | esbuild `--define` 注入；未注入时回退同值 |
+| CI 构建输入 `version`（Release 标签） | 默认 `v1.9.1-local` | 手动触发时填写新标签（如 `v1.1.0`），必须**高于**二进制内置版本才会被「一键更新」识别 |
 
 **发版同步规则**：升级功能后，三处同步修改——`package.json` → 文档头部「适用版本」→ CI 触发时填对应标签；
 「一键更新」只认 Release 标签 > 二进制内置版本。本文档头部标注的版本号与当前程序版本一一对应。
@@ -29,6 +29,8 @@ NodeWarden 本地化版可编译为 **10 个平台/架构**的单文件可执行
 | Windows | x86 | `nodewarden-win-x86.exe` | 官方 win-x86 | 32 位 Windows |
 | macOS | x64 | `nodewarden-macos-x64` | 官方 darwin-x64 | Intel Mac |
 | macOS | arm64 | `nodewarden-macos-arm64` | 官方 darwin-arm64 | Apple Silicon（M 系列） |
+| Linux | mips | `nodewarden-linux-mips.zip` | **无官方载体** | 源码兼容包：`nodewarden.js` + `dist`，需设备 Node.js ≥ 22（OpenWrt 路由器等） |
+| Linux | mipsel | `nodewarden-linux-mipsel.zip` | **无官方载体** | 源码兼容包：`nodewarden.js` + `dist`，需设备 Node.js ≥ 22（OpenWrt 路由器等） |
 
 > **ARMv6 说明**：Node.js 官方自 v19 起不再发布 linux-armv6l 构建，本地化版依赖 Node 22 内置的
 > `node:sqlite`，因此使用 **unofficial-builds** 提供的 v22.23.2 armv6l 构建作为载体。
@@ -43,7 +45,7 @@ npm install && npm run build          # 产出 dist/
 # 2. 打包后端为单文件 CJS（一次即可，blob 平台无关）
 npx esbuild local/index.ts --bundle --platform=node --format=cjs --target=node22 \
   --outfile=dist-local/nodewarden.cjs --external:bufferutil --external:utf-8-validate \
-  --define:__APP_VERSION__='"v1.8.0-local"'   # 版本号会随二进制写入，用于"一键更新"比对
+  --define:__APP_VERSION__='"v1.9.1-local"'   # 版本号会随二进制写入，用于"一键更新"比对
 
 # 3. 生成 SEA blob（一次即可）
 cat > dist-local/sea-config.json <<'EOF'
@@ -107,7 +109,7 @@ cd dist-local && zip nodewarden-linux-arm64.zip nodewarden-linux-arm64
 
 ```bash
 # 单文件可执行直接挂 Releases（GitHub Releases 单附件上限 2GB，比仓库直推更省空间）
-git tag v1.8.0-local
+git tag v1.9.1-local
 git push origin main --tags
 ```
 

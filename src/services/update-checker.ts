@@ -16,7 +16,7 @@ import path from 'node:path';
 
 // Injected at build time by esbuild --define. Fallbacks for dev/tsx runs.
 declare const __APP_VERSION__: string;
-const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v1.8.0-local';
+const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v1.9.1-local';
 const REPO = 'guimoyun/nodewarden-WL';
 // Optional GITHUB_TOKEN (NODEWARDEN_UPDATE_TOKEN) raises the API rate limit.
 const GH_TOKEN = process.env.NODEWARDEN_UPDATE_TOKEN || '';
@@ -56,12 +56,19 @@ export function platformAssetName(): string | null {
     // armv7l / armv6l are both process.arch 'arm'; prefer armv7l, fall back armv6l.
     return 'nodewarden-linux-armv7l.zip';
   }
+  if (p === 'linux' && a === 'mips') return 'nodewarden-linux-mips.zip';
+  if (p === 'linux' && a === 'mipsel') return 'nodewarden-linux-mipsel.zip';
   if (p === 'win32' && a === 'x64') return 'nodewarden-win-x64.zip';
   if (p === 'win32' && a === 'arm64') return 'nodewarden-win-arm64.zip';
   if (p === 'win32' && a === 'ia32') return 'nodewarden-win-x86.zip';
   if (p === 'darwin' && a === 'x64') return 'nodewarden-macos-x64.zip';
   if (p === 'darwin' && a === 'arm64') return 'nodewarden-macos-arm64.zip';
   return null;
+}
+
+/** True for source-compat packages (mips/mipsel) that contain no SEA binary. */
+export function isSourceCompatPlatform(): boolean {
+  return process.platform === 'linux' && (process.arch === 'mips' || process.arch === 'mipsel');
 }
 
 function compareVersions(a: string, b: string): number {
@@ -188,14 +195,36 @@ export async function applyUpdate(update: UpdateCheckResult): Promise<{ ok: bool
 
     const exeName = exeNameOf(update.assetName);
     const newExe = path.join(extractDir, exeName);
-    if (!existsSync(newExe)) {
-      return { ok: false, message: `更新包中未找到可执行文件 ${exeName}` };
-    }
-    const curExe = process.execPath;
     const distDir = process.env.NODEWARDEN_DIST_DIR
       ? path.resolve(process.env.NODEWARDEN_DIST_DIR)
       : path.resolve(process.cwd(), 'dist');
     const newDist = path.join(extractDir, 'dist');
+
+    // Source-compat package (mips/mipsel): no SEA binary, only nodewarden.js + dist.
+    if (!existsSync(newExe)) {
+      if (isSourceCompatPlatform() && existsSync(newDist) && existsSync(path.join(extractDir, 'nodewarden.js'))) {
+        const sh = path.join(stageDir, 'apply-update.sh');
+        const script = [
+          '#!/bin/sh',
+          'sleep 2',
+          `mkdir -p "${distDir}"`,
+          `cp -r "${newDist}/." "${distDir}/"`,
+          `cp "${path.join(extractDir, 'nodewarden.js')}" "${path.join(distDir, '..', 'nodewarden.js')}"`,
+          'if command -v systemctl >/dev/null 2>&1 && systemctl is-active nodewarden.service >/dev/null 2>&1; then',
+          '  systemctl restart nodewarden.service',
+          'elif [ -n "$(command -v rc-service)" ] && rc-service nodewarden status >/dev/null 2>&1; then',
+          '  rc-service nodewarden restart',
+          'fi',
+          `rm -rf "${stageDir}"`,
+          'rm -f "$0"',
+        ].join('\n');
+        writeFileSync(sh, script);
+        runDetached('/bin/sh', [sh]);
+        return { ok: true, message: '已下载源码兼容包，程序文件与前端资源将在数秒内替换；mips/mipsel 平台请确认服务已重启' };
+      }
+      return { ok: false, message: `更新包中未找到可执行文件 ${exeName}` };
+    }
+    const curExe = process.execPath;
 
     if (process.platform === 'win32') {
       const bat = path.join(stageDir, 'apply-update.bat');

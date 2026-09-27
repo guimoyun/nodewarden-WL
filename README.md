@@ -5,7 +5,7 @@
 <p align="center">
   <strong>NodeWarden Local — Bitwarden 兼容密码库 · 本地化独立可执行版</strong>
 
-> **适用版本：v1.8.0-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
+> **适用版本：v1.9.1-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
 
 </p>
 
@@ -45,6 +45,7 @@
 | Linux | x64 / arm64 / armv7l / armv6l | `nodewarden-linux-<arch>` |
 | Windows | x64 / arm64 / x86 | `nodewarden-win-<arch>.exe` |
 | macOS | x64（Intel）/ arm64（Apple Silicon） | `nodewarden-macos-<arch>` |
+| Linux | mips / mipsel | `nodewarden-linux-mips.zip` / `nodewarden-linux-mipsel.zip`（源码兼容包，需设备 Node.js ≥ 22，见 README-MIPS.md） |
 
 > 所有产物在 [Releases](https://github.com/guimoyun/nodewarden-WL/releases) 下载，
 > 或点仓库 **Actions → Build & Release → Run workflow** 手动触发重新编译发布。
@@ -96,6 +97,7 @@ Bitwarden 客户端对接：设置 → 自托管环境 → 服务器地址填 `h
 | [README-WINDOWS.md](README-WINDOWS.md) | Windows 版：快速开始、防火墙、SmartScreen 说明、一键更新 |
 | [README-WINDOWS.md](README-WINDOWS.md) | Windows 版：快速开始、防火墙、SmartScreen 说明、一键更新 |
 | [README-MACOS.md](README-MACOS.md) | macOS 版：重新签名、Gatekeeper 处理 |
+| [README-MIPS.md](README-MIPS.md) | mips/mipsel 源码兼容包：OpenWrt 路由器等设备部署说明 |
 | [BUILD-RELEASES.md](BUILD-RELEASES.md) | 跨平台构建与发布：平台矩阵、构建流程、运行时清单、CI 说明 |
 
 ## 🔧 本地化改造说明（相对 Cloudflare 版）

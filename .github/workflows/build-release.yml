@@ -1,7 +1,7 @@
 # NodeWarden Local — 手动触发编译并发布到 GitHub Releases
 #
 # 用法：GitHub 仓库页 → Actions → "Build & Release" → Run workflow
-#   （可选填写版本号，如 v1.1.0；默认 v1.8.0-local，与程序内置版本一致）
+#   （可选填写版本号，如 v1.1.0；默认 v1.9.1-local，与程序内置版本一致）
 # 编译完成后自动把 9 个平台的发布包上传到 Releases 下载区。
 #
 # 说明：
@@ -18,7 +18,7 @@ on:
       version:
         description: "Release 标签（版本号）"
         required: false
-        default: "v1.8.0-local"
+        default: "v1.9.1-local"
 
 permissions:
   contents: write
@@ -105,6 +105,20 @@ jobs:
           pkg nodewarden-win-arm64 nodewarden-win-arm64.exe
           pkg nodewarden-win-x86 nodewarden-win-x86.exe
           ls -la nodewarden-*.zip
+
+      - name: Package MIPS source-compat zips (node.js + dist, no SEA)
+        run: |
+          set -e
+          cd dist-local
+          ZIPDIR="$(pwd)"
+          for plat in mips mipsel; do
+            d=/tmp/pkg/$plat; rm -rf "$d"; mkdir -p "$d"
+            cp nodewarden.cjs "$d/nodewarden.js"
+            cp -r ../dist "$d/dist"
+            cp ../start.sh ../README-MIPS.md ../scripts/start-mips.sh "$d/"
+            (cd "$d" && zip -qr "$ZIPDIR/nodewarden-linux-$plat.zip" .)
+          done
+          ls -la nodewarden-linux-mips*.zip
 
       - name: Upload artifacts (linux + win)
         uses: actions/upload-artifact@v4

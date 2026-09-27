@@ -1,6 +1,6 @@
 {
   "name": "nodewarden-local",
-  "version": "1.8.0-local",
+  "version": "1.9.1-local",
   "description": "NodeWarden Local — Bitwarden-compatible password server as a standalone local executable (SQLite, no Cloudflare dependency)",
   "author": "guimoyun",
   "license": "LGPL-3.0",

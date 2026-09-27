@@ -1,6 +1,6 @@
 # NodeWarden Local (English)
 
-> **Applies to version: v1.8.0-local** — matches the version baked into the binary;
+> **Applies to version: v1.9.1-local** — matches the version baked into the binary;
 > a Release tag higher than this is offered by the one-click updater.
 
 
@@ -177,7 +177,7 @@ from GitHub Releases:
 - Update source is fixed to `https://github.com/guimoyun/nodewarden-WL/releases`.
 - A release tag (e.g. `v1.1.0`) must be **higher than the baked-in binary version**
   to be offered. The version is injected at build time (`--define:__APP_VERSION__`);
-  fallback is `v1.8.0-local`.
+  fallback is `v1.9.1-local`.
 - GitHub API rate limits can be raised with `NODEWARDEN_UPDATE_TOKEN`; asset downloads
   can be sped up with `NODEWARDEN_UPDATE_MIRROR` (e.g. ghproxy) for mainland networks.
 
@@ -221,7 +221,7 @@ npm install && npm run build          # produces dist/
 # 2. Bundle the backend into a single CJS file (once; blob is platform-independent)
 npx esbuild local/index.ts --bundle --platform=node --format=cjs --target=node22 \
   --outfile=dist-local/nodewarden.cjs --external:bufferutil --external:utf-8-validate \
-  --define:__APP_VERSION__='"v1.8.0-local"'   # version baked in for one-click update
+  --define:__APP_VERSION__='"v1.9.1-local"'   # version baked in for one-click update
 
 # 3. Generate the SEA blob (once)
 cat > dist-local/sea-config.json <<'EOF'
@@ -243,6 +243,7 @@ Full platform matrix, runtime download list and CI instructions: BUILD-RELEASES.
 ## 8. Requirements
 
 - Linux x64/arm64/armv7l/armv6l, Windows x64/arm64/x86, macOS x64/arm64
+- Linux mips/mipsel via **source-compat package** (`nodewarden.js` + dist; device Node.js ≥ 22, see README-MIPS.md)
 - `--install-service` requires **root** (systemd or OpenRC host)
 - One-click update requires outbound access to `api.github.com` + the asset download
   domain (or configure `NODEWARDEN_UPDATE_MIRROR`)

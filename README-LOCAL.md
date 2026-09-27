@@ -1,6 +1,6 @@
 # NodeWarden Local（本地化可执行版）
 
-> **适用版本：v1.8.0-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
+> **适用版本：v1.9.1-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
 
 
 > **English guide: [README-LOCAL-EN.md](README-LOCAL-EN.md)** — quick start, `--install-service`
@@ -234,7 +234,7 @@ Web Vault 的「程序设置 → 一键更新」页（需管理员）支持从 G
 - 也提供「手动下载」链接直接取包。
 
 > 注意：GitHub Releases 的版本标签（如 v1.1.0）需高于二进制内置版本号才会提示可更新；
-> 版本号在编译时写入（`--define:__APP_VERSION__`），未注入时回退为 `v1.8.0-local`。
+> 版本号在编译时写入（`--define:__APP_VERSION__`），未注入时回退为 `v1.9.1-local`。
 
 ## 六、本地化改造说明（相对 Cloudflare 版）
 
