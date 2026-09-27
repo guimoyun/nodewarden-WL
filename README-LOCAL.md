@@ -1,5 +1,8 @@
 # NodeWarden Local（本地化可执行版）
 
+> **适用版本：v1.8.0-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
+
+
 > **English guide: [README-LOCAL-EN.md](README-LOCAL-EN.md)** — quick start, `--install-service`
 > (systemd/OpenRC), one-click update from GitHub Releases, environment variables, build steps.
 

@@ -1,5 +1,8 @@
 # NodeWarden Local — Windows 版
 
+> **适用版本：v1.8.0-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
+
+
 Windows x64 单文件可执行程序（内置 Node v22.23.2 运行时，无需安装 Node，无需任何云服务账号）。
 
 ## 快速开始

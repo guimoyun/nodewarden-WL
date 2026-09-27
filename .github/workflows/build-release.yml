@@ -1,7 +1,7 @@
 # NodeWarden Local — 手动触发编译并发布到 GitHub Releases
 #
 # 用法：GitHub 仓库页 → Actions → "Build & Release" → Run workflow
-#   （可选填写版本号，如 v1.0.1，默认 v1.0.0-local）
+#   （可选填写版本号，如 v1.1.0；默认 v1.8.0-local，与程序内置版本一致）
 # 编译完成后自动把 9 个平台的发布包上传到 Releases 下载区。
 #
 # 说明：
@@ -18,7 +18,7 @@ on:
       version:
         description: "Release 标签（版本号）"
         required: false
-        default: "v1.0.0-local"
+        default: "v1.8.0-local"
 
 permissions:
   contents: write

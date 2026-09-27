@@ -4,6 +4,9 @@
 
 <p align="center">
   <strong>NodeWarden Local — Bitwarden 兼容密码库 · 本地化独立可执行版</strong>
+
+> **适用版本：v1.8.0-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
+
 </p>
 
 <p align="center">

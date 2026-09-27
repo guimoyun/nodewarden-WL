@@ -1,5 +1,9 @@
 # NodeWarden Local (English)
 
+> **Applies to version: v1.8.0-local** — matches the version baked into the binary;
+> a Release tag higher than this is offered by the one-click updater.
+
+
 NodeWarden is a **Bitwarden-compatible password vault** that runs as a standalone,
 single-file executable. It embeds the Node v22 runtime, needs no Cloudflare account,
 no Docker, and no database server — just one binary, one SQLite data directory, and

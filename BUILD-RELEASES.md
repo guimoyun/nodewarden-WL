@@ -1,7 +1,20 @@
 # NodeWarden Local — 跨平台构建与发布
 
+> **适用版本：v1.8.0-local**（与程序内置版本号一一对应；Release 标签高于此版本即可通过「一键更新」升级）
+
 NodeWarden 本地化版可编译为 **10 个平台/架构**的单文件可执行程序。所有平台的业务代码完全同源
 （单个平台无关的 SEA blob），差异仅在注入载体（对应平台的 Node v22.23.2 运行时）。
+
+## 〇、版本号（与程序版本对应）
+
+| 位置 | 取值 | 说明 |
+| --- | --- | --- |
+| `package.json` `version` | `1.8.0-local` | npm 包版本，**文档版本基准** |
+| 二进制内置版本（`__APP_VERSION__`） | `v1.8.0-local` | esbuild `--define` 注入；未注入时回退同值 |
+| CI 构建输入 `version`（Release 标签） | 默认 `v1.8.0-local` | 手动触发时填写新标签（如 `v1.1.0`），必须**高于**二进制内置版本才会被「一键更新」识别 |
+
+**发版同步规则**：升级功能后，三处同步修改——`package.json` → 文档头部「适用版本」→ CI 触发时填对应标签；
+「一键更新」只认 Release 标签 > 二进制内置版本。本文档头部标注的版本号与当前程序版本一一对应。
 
 ## 一、平台矩阵
 
@@ -94,7 +107,7 @@ cd dist-local && zip nodewarden-linux-arm64.zip nodewarden-linux-arm64
 
 ```bash
 # 单文件可执行直接挂 Releases（GitHub Releases 单附件上限 2GB，比仓库直推更省空间）
-git tag v1.0.0-local
+git tag v1.8.0-local
 git push origin main --tags
 ```
 
