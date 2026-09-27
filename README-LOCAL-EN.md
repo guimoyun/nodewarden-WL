@@ -30,6 +30,31 @@ Other platforms: swap the file name for your platform
 (`nodewarden-linux-arm64.zip`, `nodewarden-win-x64.zip`, `nodewarden-macos-arm64.zip`, …;
 full matrix in BUILD-RELEASES.md). On macOS re-sign first: `codesign --force --sign - ./nodewarden-macos-*`.
 
+### One-command install to /opt/nodewarden (download + deploy + service)
+
+```bash
+# One line on the server: download latest → deploy to /opt/nodewarden →
+# generate secret → register the service and start it
+curl -sL https://raw.githubusercontent.com/guimoyun/nodewarden-WL/main/scripts/nodewarden-install.sh | sudo bash
+```
+
+Program and vault data live together under one directory:
+
+```
+/opt/nodewarden/
+├── nodewarden-linux-x64   ← executable
+├── dist/                  ← Web Vault assets
+├── nw-data/               ← vault data (SQLite database, attachments)
+├── .env                   ← JWT_SECRET (0600, auto-generated/reused)
+└── start.sh               ← manual foreground run
+```
+
+- Auto-detects the architecture (x64 / arm64 / armv7l / armv6l) and the init
+  system (systemd on Debian/Ubuntu, OpenRC on Alpine);
+- Re-running the script **reuses the existing .env secret and data** — it also
+  works as an upgrade path;
+- Manual foreground run (debugging): `/opt/nodewarden/start.sh`.
+
 ### One-command service registration (Debian / Ubuntu / Alpine, boot autostart)
 
 ```bash

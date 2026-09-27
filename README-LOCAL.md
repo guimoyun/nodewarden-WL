@@ -26,6 +26,28 @@ curl -sL -o nodewarden.zip https://github.com/guimoyun/nodewarden-WL/releases/la
 > 其它平台把文件名换成对应产物即可（`nodewarden-win-x64.exe.zip` / `nodewarden-macos-arm64.zip` 等，
 > 产物清单见 BUILD-RELEASES.md 平台矩阵）。macOS 需先 `codesign --force --sign -` 重新签名。
 
+### 一键安装到 /opt/nodewarden（推荐，含下载部署 + 服务注册）
+
+```bash
+# 服务器上一行命令完成：下载最新版 → 部署到 /opt/nodewarden → 生成密钥 → 注册服务并启动
+curl -sL https://raw.githubusercontent.com/guimoyun/nodewarden-WL/main/scripts/nodewarden-install.sh | sudo bash
+```
+
+程序目录与密码库目录统一：
+
+```
+/opt/nodewarden/
+├── nodewarden-linux-x64   ← 可执行程序
+├── dist/                  ← Web Vault 前端资源
+├── nw-data/               ← 密码库数据（SQLite 数据库、附件）
+├── .env                   ← JWT_SECRET（0600，自动生成/复用）
+└── start.sh               ← 手动前台运行
+```
+
+- 自动检测架构（x64 / arm64 / armv7l / armv6l），自动处理 systemd（Debian/Ubuntu）或 OpenRC（Alpine）；
+- 重跑脚本会**复用已有 .env 密钥与数据**，可作升级手段；
+- 手动前台运行（调试）：`/opt/nodewarden/start.sh`。
+
 ### 一键注册系统服务（Debian / Ubuntu / Alpine，开机自启）
 
 ```bash

@@ -96,7 +96,7 @@ jobs:
           set -e
           cd dist-local
           ZIPDIR="$(pwd)"   # absolute path to dist-local
-          pkg() { d=/tmp/pkg/$1; rm -rf "$d"; mkdir -p "$d"; cp "$2" "$d/"; cp -r ../dist "$d/dist"; cp ../start.sh ../README-LOCAL.md "$d/"; (cd "$d" && zip -qr "$ZIPDIR/$1.zip" .); }
+          pkg() { d=/tmp/pkg/$1; rm -rf "$d"; mkdir -p "$d"; cp "$2" "$d/"; cp -r ../dist "$d/dist"; cp ../start.sh ../README-LOCAL.md ../scripts/nodewarden-install.sh ../scripts/nodewarden-run.sh "$d/"; (cd "$d" && zip -qr "$ZIPDIR/$1.zip" .); }
           pkg nodewarden-linux-x64 nodewarden-linux-x64
           pkg nodewarden-linux-arm64 nodewarden-linux-arm64
           pkg nodewarden-linux-armv7l nodewarden-linux-armv7l
@@ -163,7 +163,7 @@ jobs:
           d=/tmp/pkg/macos-${{ matrix.arch }}; rm -rf "$d"; mkdir -p "$d"
           cp nodewarden-macos-${{ matrix.arch }} "$d/"
           cp -r ../dist "$d/dist"
-          cp ../start.sh ../README-MACOS.md "$d/"
+          cp ../start.sh ../README-MACOS.md ../scripts/nodewarden-install.sh ../scripts/nodewarden-run.sh "$d/"
           (cd "$d" && zip -qr "$ZIPDIR/nodewarden-macos-${{ matrix.arch }}.zip" .)
 
       - name: Upload artifact (macos)
