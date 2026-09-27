@@ -89,7 +89,9 @@ Bitwarden 客户端对接：设置 → 自托管环境 → 服务器地址填 `h
 | 文档 | 内容 |
 | --- | --- |
 | [README-LOCAL.md](README-LOCAL.md) | 主使用说明：环境变量、systemd 部署、备份、本地化改造细节、从源码构建 |
-| [README-WINDOWS.md](README-WINDOWS.md) | Windows 版：快速开始、防火墙、SmartScreen 说明 |
+| [README-LOCAL-EN.md](README-LOCAL-EN.md) | **English** main guide: quick start, `--install-service` (systemd/OpenRC), one-click update, env vars, build |
+| [README-WINDOWS.md](README-WINDOWS.md) | Windows 版：快速开始、防火墙、SmartScreen 说明、一键更新 |
+| [README-WINDOWS.md](README-WINDOWS.md) | Windows 版：快速开始、防火墙、SmartScreen 说明、一键更新 |
 | [README-MACOS.md](README-MACOS.md) | macOS 版：重新签名、Gatekeeper 处理 |
 | [BUILD-RELEASES.md](BUILD-RELEASES.md) | 跨平台构建与发布：平台矩阵、构建流程、运行时清单、CI 说明 |
 

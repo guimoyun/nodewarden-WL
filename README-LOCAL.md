@@ -1,5 +1,8 @@
 # NodeWarden Local（本地化可执行版）
 
+> **English guide: [README-LOCAL-EN.md](README-LOCAL-EN.md)** — quick start, `--install-service`
+> (systemd/OpenRC), one-click update from GitHub Releases, environment variables, build steps.
+
 NodeWarden（Bitwarden 兼容密码管理服务器）的**本地化独立可执行版**：脱离 Cloudflare 生态，
 以单个可执行文件运行完整的密码库服务，数据全部保存在本机。
 

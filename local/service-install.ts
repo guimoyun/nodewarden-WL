@@ -219,18 +219,22 @@ export function uninstallService(config: LocalConfig): { ok: boolean; init: Init
 }
 
 export function printHelp(): void {
-  console.log(`NodeWarden Local — Bitwarden 兼容密码库（独立可执行版）
+  console.log(`NodeWarden Local — Bitwarden-compatible password vault (standalone)
+Bitwarden 兼容密码库（独立可执行版）
 
-用法:
-  ./nodewarden-<platform>                     启动 Web Vault（默认 0.0.0.0:8787）
-  ./nodewarden-<platform> --install-service   一键注册系统服务（Debian/Ubuntu → systemd；Alpine → OpenRC）
-  ./nodewarden-<platform> --uninstall-service 卸载系统服务
-  ./nodewarden-<platform> --help              显示本帮助
+Usage / 用法:
+  ./nodewarden-<platform>                      Start Web Vault (default 0.0.0.0:8787) / 启动密码库
+  ./nodewarden-<platform> --install-service   Register as a system service (systemd / OpenRC) / 一键注册系统服务
+  ./nodewarden-<platform> --uninstall-service Remove the service / 卸载系统服务
+  ./nodewarden-<platform> --help              Show this help / 显示本帮助
 
-环境变量:
-  JWT_SECRET              必填签名密钥（≥32 字符）；--install-service 时会自动生成并保存到 /etc/nodewarden.env
-  NODEWARDEN_DATA_DIR     数据目录（密码库 SQLite 所在），默认 ./nw-data
-  NODEWARDEN_DIST_DIR     Web Vault 前端资源目录，默认 ./dist
-  HOST / PORT             监听地址与端口，默认 0.0.0.0 / 8787
+Environment variables / 环境变量:
+  JWT_SECRET              Required signing secret (>=32 chars) / 必填签名密钥；
+                          --install-service generates and saves it to /etc/nodewarden.env automatically
+  NODEWARDEN_DATA_DIR     Data dir (vault SQLite), default ./nw-data / 数据目录，默认 ./nw-data
+  NODEWARDEN_DIST_DIR     Web Vault assets dir, default ./dist / 前端资源目录，默认 ./dist
+  HOST / PORT             Listen address / port, default 0.0.0.0 / 8787
+  NODEWARDEN_UPDATE_TOKEN GitHub token for one-click update (optional) / 一键更新 GitHub Token（可选）
+  NODEWARDEN_UPDATE_MIRROR Download mirror prefix (optional) / 一键更新下载镜像前缀（可选）
 `);
 }
