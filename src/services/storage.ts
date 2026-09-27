@@ -1,4 +1,4 @@
-import { User, Cipher, Folder, Attachment, Device, Invite, AuditLog, Send, TrustedDeviceTokenSummary, RefreshTokenRecord, CustomEquivalentDomain, AccountPasskeyChallenge, AccountPasskeyChallengeScope, AccountPasskeyCredential, AuthRequestRecord, RemoteSyncSource } from '../types';
+import { User, Cipher, Folder, Attachment, Device, Invite, AuditLog, Send, TrustedDeviceTokenSummary, RefreshTokenRecord, CustomEquivalentDomain, AccountPasskeyChallenge, AccountPasskeyChallengeScope, AccountPasskeyCredential, AuthRequestRecord, RemoteSyncSource, SyncConflict } from '../types';
 import { LIMITS } from '../config/limits';
 import { ensurePushInstallationCredentials } from './push-relay';
 import { ensureStorageSchema } from './storage-schema';
@@ -164,7 +164,7 @@ const STORAGE_SCHEMA_VERSION_KEY = 'schema.version';
 // Bump this whenever src/services/storage-schema.ts or migrations/0001_init.sql
 // changes. Existing D1 installs only rerun ensureStorageSchema() when this value
 // differs from config.schema.version.
-const STORAGE_SCHEMA_VERSION = '2026-09-27-remote-sync-sources';
+const STORAGE_SCHEMA_VERSION = '2026-09-27-sync-conflicts';
 const REQUIRED_SCHEMA_TABLES = ['webauthn_credentials', 'webauthn_challenges', 'auth_requests', 'totp_login_replays'] as const;
 
 // D1-backed storage.
@@ -1008,6 +1008,68 @@ export class StorageService {
   async deleteRemoteSyncSource(id: string): Promise<void> {
     await this.db.prepare('DELETE FROM remote_sync_sources WHERE id = ?').bind(id).run();
   }
+
+  // --- Sync conflicts ---
+
+  async listSyncConflicts(status?: 'pending' | 'acknowledged'): Promise<SyncConflict[]> {
+    const sql = status
+      ? 'SELECT * FROM sync_conflicts WHERE status = ? ORDER BY updated_at DESC'
+      : 'SELECT * FROM sync_conflicts ORDER BY updated_at DESC';
+    const stmt = status ? this.db.prepare(sql).bind(status) : this.db.prepare(sql);
+    const rows = await stmt.all<SyncConflict>();
+    return (rows.results ?? []).map(mapSyncConflictRow);
+  }
+
+  async upsertSyncConflict(conflict: SyncConflict): Promise<void> {
+    await this.db
+      .prepare(
+        'INSERT INTO sync_conflicts(id, source_id, user_id, cipher_id, local_updated_at, remote_updated_at, resolution, status, created_at, updated_at, acknowledged_at) ' +
+          'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ' +
+          'ON CONFLICT(cipher_id, user_id) DO UPDATE SET ' +
+          'source_id=excluded.source_id, local_updated_at=excluded.local_updated_at, remote_updated_at=excluded.remote_updated_at, ' +
+          'resolution=excluded.resolution, status=excluded.status, updated_at=excluded.updated_at, acknowledged_at=excluded.acknowledged_at'
+      )
+      .bind(
+        conflict.id,
+        conflict.sourceId,
+        conflict.userId,
+        conflict.cipherId,
+        conflict.localUpdatedAt,
+        conflict.remoteUpdatedAt,
+        conflict.resolution,
+        conflict.status,
+        conflict.createdAt,
+        conflict.updatedAt,
+        conflict.acknowledgedAt ?? null
+      )
+      .run();
+  }
+
+  async acknowledgeSyncConflict(id: string): Promise<SyncConflict | null> {
+    const now = new Date().toISOString();
+    await this.db
+      .prepare("UPDATE sync_conflicts SET status = 'acknowledged', acknowledged_at = ?, updated_at = ? WHERE id = ?")
+      .bind(now, now, id)
+      .run();
+    const row = await this.db.prepare('SELECT * FROM sync_conflicts WHERE id = ?').bind(id).first<SyncConflict>();
+    return row ? mapSyncConflictRow(row) : null;
+  }
+}
+
+function mapSyncConflictRow(row: any): SyncConflict {
+  return {
+    id: row.id,
+    sourceId: row.source_id,
+    userId: row.user_id,
+    cipherId: row.cipher_id,
+    localUpdatedAt: row.local_updated_at,
+    remoteUpdatedAt: row.remote_updated_at,
+    resolution: row.resolution,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    acknowledgedAt: row.acknowledged_at ?? null,
+  };
 }
 
 function mapRemoteSyncSourceRow(row: any): RemoteSyncSource {

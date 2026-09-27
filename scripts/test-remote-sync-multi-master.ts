@@ -224,17 +224,44 @@ async function main(): Promise<void> {
   const onA = aCiphers.find((c) => c.id === id1);
   assert(!!onA && dec(onA.name).includes('v2'), 'A now has B\'s newer version');
 
-  console.log('[5] Conflict: A edits AFTER B → A\'s newer write wins on both');
+  console.log('[5] Conflict: A edits AFTER B → A\'s newer write wins, conflict surfaced');
   await updateCipher(A, aToken, id1, 'site-one-v3'); // newer than B's v2
   const r4 = await trigger(B, bAdmin, sourceOnB);
   assert(r4.updated >= 1, `B pulled A's newer edit (got ${JSON.stringify(r4)})`);
+  assert(
+    (r4.warnings ?? []).some((w: string) => w.includes('两端均有修改')),
+    `conflict surfaced in warnings (got ${JSON.stringify(r4.warnings)})`
+  );
   bCiphers = await listCiphers(B, bToken);
   const onB = bCiphers.find((c) => c.id === id1);
   assert(!!onB && dec(onB.name).includes('v3'), 'B now has A\'s newer version (last write wins)');
+  const conflictsResp = await fetch(`${B}/api/admin/remote-sync/conflicts`, {
+    headers: { Authorization: `Bearer ${bAdmin}` },
+  });
+  const conflicts = ((await conflictsResp.json()) as any).data ?? [];
+  assert(conflicts.length === 1, `1 pending conflict listed (got ${conflicts.length})`);
+  assert(conflicts[0]?.cipherId === id1, 'conflict references the edited cipher');
+  assert(conflicts[0]?.resolution === 'auto-remote', `resolution is auto-remote (got ${conflicts[0]?.resolution})`);
+  const ack = await fetch(`${B}/api/admin/remote-sync/conflicts/${conflicts[0].id}/ack`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${bAdmin}` },
+  });
+  const ackJson = (await ack.json()) as any;
+  assert(ack.status === 200 && ackJson?.status === 'acknowledged', 'conflict acknowledged');
+  const afterAck = await fetch(`${B}/api/admin/remote-sync/conflicts`, {
+    headers: { Authorization: `Bearer ${bAdmin}` },
+  });
+  const afterList = ((await afterAck.json()) as any).data ?? [];
+  assert(afterList.length === 0, 'no pending conflicts after ack');
 
-  console.log('[6] Idempotent re-sync: no loops, no overwrite, skipped only');
+  console.log('[6] Idempotent re-sync: no loops, no overwrite, no duplicate conflict');
   const r5 = await trigger(A, aAdmin, sourceOnA);
   assert(r5.added === 0 && r5.updated === 0 && r5.skipped >= 2, `A re-sync idempotent (got ${JSON.stringify(r5)})`);
+  const afterRe = await fetch(`${B}/api/admin/remote-sync/conflicts`, {
+    headers: { Authorization: `Bearer ${bAdmin}` },
+  });
+  const reList = ((await afterRe.json()) as any).data ?? [];
+  assert(reList.length === 0, 'no conflict re-created on idempotent re-sync');
 
   console.log('[7] Deletion propagates: soft-delete on A → B marks deleted');
   await softDeleteCipher(A, aToken, id1);

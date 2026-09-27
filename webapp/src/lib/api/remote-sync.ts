@@ -95,3 +95,28 @@ export async function deleteRemoteSyncSource(authedFetch: AuthedFetch, id: strin
   const resp = await authedFetch(`/api/admin/remote-sync/${id}`, { method: 'DELETE' });
   if (!resp.ok) throw new Error(await parseErrorMessage(resp, t('txt_remote_sync_delete_failed')));
 }
+
+export interface SyncConflictRecord {
+  id: string;
+  cipherId: string;
+  localUpdatedAt: string;
+  remoteUpdatedAt: string;
+  resolution: 'auto-remote' | 'auto-local';
+  status: 'pending' | 'acknowledged';
+  createdAt: string;
+  updatedAt: string;
+  sourceUrl: string | null;
+  sourceEmail: string | null;
+}
+
+export async function listSyncConflicts(authedFetch: AuthedFetch): Promise<SyncConflictRecord[]> {
+  const resp = await authedFetch('/api/admin/remote-sync/conflicts');
+  if (!resp.ok) throw new Error(await parseErrorMessage(resp, t('txt_remote_sync_list_failed')));
+  const data = await parseJson<{ data?: SyncConflictRecord[] }>(resp);
+  return data?.data ?? [];
+}
+
+export async function ackSyncConflict(authedFetch: AuthedFetch, id: string): Promise<void> {
+  const resp = await authedFetch(`/api/admin/remote-sync/conflicts/${id}/ack`, { method: 'POST' });
+  if (!resp.ok) throw new Error(await parseErrorMessage(resp, t('txt_remote_sync_conflict_ack_failed')));
+}

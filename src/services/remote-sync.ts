@@ -24,7 +24,7 @@
 //   has a different key, data sync is skipped with an explicit warning instead
 //   of silently corrupting the local vault.
 
-import type { Env, RemoteSyncSource, User, Cipher, Folder, Attachment } from '../types';
+import type { Env, RemoteSyncSource, User, Cipher, Folder, Attachment, SyncConflict } from '../types';
 import { StorageService } from './storage';
 import { putBlobObject, getAttachmentObjectKey } from './blob-store';
 
@@ -383,6 +383,66 @@ async function downloadRemoteAttachment(
   }
 }
 
+// Attachment metadata + best-effort file download for a merged cipher.
+async function syncAttachments(
+  url: string,
+  accessToken: string,
+  remoteCipher: any,
+  cipherId: string,
+  env: Env,
+  storage: StorageService,
+  result: RemoteSyncResult
+): Promise<void> {
+  for (const attachment of remoteCipher.attachments ?? []) {
+    const localAttachment: Attachment = {
+      id: String(attachment.id || crypto.randomUUID()),
+      cipherId,
+      fileName: String(attachment.fileName ?? ''),
+      size: Number(attachment.size) || 0,
+      sizeName: String(attachment.sizeName ?? ''),
+      key: attachment.key ?? null,
+    };
+    await storage.saveAttachment(localAttachment);
+    result.attachments += 1;
+    const downloaded = await downloadRemoteAttachment(url, accessToken, cipherId, attachment, env, result.warnings);
+    if (downloaded) result.attachmentsDownloaded += 1;
+  }
+}
+
+// Record (upsert) a sync conflict: both nodes edited the same entry since the
+// last merge. The last-write-wins merge already applied; this surfaces the fact
+// for the admin to acknowledge. Result counters treat it like the merge it was.
+async function recordSyncConflict(
+  storage: StorageService,
+  source: RemoteSyncSource,
+  user: User,
+  existing: Cipher,
+  remoteVersion: Cipher,
+  resolution: 'auto-remote' | 'auto-local',
+  result: RemoteSyncResult
+): Promise<void> {
+  const now = new Date().toISOString();
+  const conflict: SyncConflict = {
+    id: crypto.randomUUID(),
+    sourceId: source.id,
+    userId: user.id,
+    cipherId: existing.id,
+    localUpdatedAt: existing.updatedAt,
+    remoteUpdatedAt: remoteVersion.updatedAt,
+    resolution,
+    status: 'pending',
+    createdAt: now,
+    updatedAt: now,
+    acknowledgedAt: null,
+  };
+  await storage.upsertSyncConflict(conflict);
+  const winner = resolution === 'auto-remote' ? '远端' : '本地';
+  const other = resolution === 'auto-remote' ? '本地' : '远端';
+  result.warnings.push(
+    `条目 ${existing.id.slice(0, 8)}… 在两端均有修改（${other} ${existing.updatedAt} / 远端 ${remoteVersion.updatedAt}），当前采用${winner}版本，可在管理页确认`
+  );
+}
+
 export async function synchronizeRemoteSourceById(
   env: Env,
   sourceId: string,
@@ -459,41 +519,71 @@ export async function synchronizeRemoteSourceById(
       }
 
       // Ciphers — multi-master last-write-wins by updatedAt:
-      //   - not present locally          → add
+      //   - not present locally          → add (baseline = remote timestamp)
       //   - remote newer than local      → overwrite (updated)
       //   - remote same age or older     → skip (idempotent; keeps local edits)
       // Deletion/archival is just a state change on the same timestamp clock, so
       // a newer remote delete wins, and a newer local restore/edit beats an
       // older remote delete.
+      //
+      // Conflict detection: each entry tracks `lastSyncedAt` (the timestamp of
+      // the last merge). If BOTH the local entry and the remote entry changed
+      // since that baseline (and they disagree), both nodes edited the same
+      // item — a sync conflict. The last-write-wins merge still applies, but a
+      // conflict record is written so the admin page can surface and
+      // acknowledge it instead of silently resolving it.
       for (const remoteCipher of syncData.ciphers ?? []) {
         const localCipher = buildLocalCipher(remoteCipher, user.id);
         const existing = await storage.getCipherForUser(localCipher.id, user.id);
-        if (existing) {
-          if (parseTs(localCipher.updatedAt) <= parseTs(existing.updatedAt)) {
-            result.skipped += 1;
-            continue; // local entry is same or newer — never clobber it
+        if (!existing) {
+          result.added += 1;
+          localCipher.lastSyncedAt = localCipher.updatedAt;
+          await storage.saveCipher(localCipher);
+          await syncAttachments(source.url, accessToken, remoteCipher, localCipher.id, env, storage, result);
+          continue;
+        }
+
+        const remoteTs = parseTs(localCipher.updatedAt);
+        const localTs = parseTs(existing.updatedAt);
+        const baselineTs = parseTs(existing.lastSyncedAt);
+        const localEdited = baselineTs > 0 && localTs > baselineTs;
+        const remoteEdited = baselineTs > 0 && remoteTs > baselineTs;
+        const isConflict = localEdited && remoteEdited && remoteTs !== localTs;
+
+        if (remoteTs === localTs) {
+          // Idempotent: same version both sides. Catch up the baseline so
+          // future conflict detection works (legacy rows have no baseline).
+          result.skipped += 1;
+          if (!existing.lastSyncedAt || baselineTs !== localTs) {
+            existing.lastSyncedAt = existing.updatedAt;
+            await storage.saveCipher(existing);
+          }
+          continue;
+        }
+
+        if (remoteTs > localTs) {
+          // Remote is the newer writer.
+          if (isConflict) {
+            await recordSyncConflict(storage, source, user, existing, localCipher, 'auto-remote', result);
           }
           result.updated += 1;
+          localCipher.lastSyncedAt = localCipher.updatedAt;
+          await storage.saveCipher(localCipher);
         } else {
-          result.added += 1;
+          // Local is the newer writer — keep it, advance the baseline so the
+          // local edit is no longer flagged on the next merge.
+          if (isConflict) {
+            await recordSyncConflict(storage, source, user, existing, localCipher, 'auto-local', result);
+          }
+          result.skipped += 1;
+          if (baselineTs !== localTs) {
+            existing.lastSyncedAt = existing.updatedAt;
+            await storage.saveCipher(existing);
+          }
+          continue;
         }
-        await storage.saveCipher(localCipher);
 
-        // Attachment metadata + best-effort file download.
-        for (const attachment of remoteCipher.attachments ?? []) {
-          const localAttachment: Attachment = {
-            id: String(attachment.id || crypto.randomUUID()),
-            cipherId: localCipher.id,
-            fileName: String(attachment.fileName ?? ''),
-            size: Number(attachment.size) || 0,
-            sizeName: String(attachment.sizeName ?? ''),
-            key: attachment.key ?? null,
-          };
-          await storage.saveAttachment(localAttachment);
-          result.attachments += 1;
-          const downloaded = await downloadRemoteAttachment(source.url, accessToken, localCipher.id, attachment, env, result.warnings);
-          if (downloaded) result.attachmentsDownloaded += 1;
-        }
+        await syncAttachments(source.url, accessToken, remoteCipher, localCipher.id, env, storage, result);
       }
 
       await storage.updateRevisionDate(user.id);

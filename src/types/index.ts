@@ -86,6 +86,21 @@ export interface RemoteSyncSource {
   updatedAt: string;
 }
 
+/** A sync conflict record: the same entry was edited on both nodes since the last merge. */
+export interface SyncConflict {
+  id: string;
+  sourceId: string;
+  userId: string;
+  cipherId: string;
+  localUpdatedAt: string;
+  remoteUpdatedAt: string;
+  resolution: 'auto-remote' | 'auto-local';
+  status: 'pending' | 'acknowledged';
+  createdAt: string;
+  updatedAt: string;
+  acknowledgedAt: string | null;
+}
+
 export interface CustomEquivalentDomain {
   id: string;
   domains: string[];
@@ -281,6 +296,8 @@ export interface Cipher {
   updatedAt: string;
   archivedAt: string | null;
   deletedAt: string | null;
+  /** Baseline of the last remote-sync merge for this entry (used for conflict detection). */
+  lastSyncedAt: string | null;
   /** Allow unknown fields from Bitwarden clients to be stored and passed through transparently. */
   [key: string]: any;
 }

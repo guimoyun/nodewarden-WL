@@ -41,9 +41,10 @@ const SCHEMA_STATEMENTS: readonly string[] = [
   'CREATE TABLE IF NOT EXISTS ciphers (' +
   'id TEXT PRIMARY KEY, user_id TEXT NOT NULL, type INTEGER NOT NULL, folder_id TEXT, name TEXT, notes TEXT, ' +
   'favorite INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL, reprompt INTEGER, key TEXT, ' +
-  'created_at TEXT NOT NULL, updated_at TEXT NOT NULL, archived_at TEXT, deleted_at TEXT, ' +
+  'created_at TEXT NOT NULL, updated_at TEXT NOT NULL, archived_at TEXT, deleted_at TEXT, last_synced_at TEXT, ' +
   'FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)',
   'ALTER TABLE ciphers ADD COLUMN archived_at TEXT',
+  'ALTER TABLE ciphers ADD COLUMN last_synced_at TEXT',
   'CREATE INDEX IF NOT EXISTS idx_ciphers_user_updated ON ciphers(user_id, updated_at)',
   'CREATE INDEX IF NOT EXISTS idx_ciphers_user_archived ON ciphers(user_id, archived_at)',
   'CREATE INDEX IF NOT EXISTS idx_ciphers_user_deleted ON ciphers(user_id, deleted_at)',
@@ -176,6 +177,13 @@ const SCHEMA_STATEMENTS: readonly string[] = [
   'sync_interval_minutes INTEGER NOT NULL DEFAULT 60, enabled INTEGER NOT NULL DEFAULT 1, ' +
   'status TEXT NOT NULL DEFAULT \'idle\', last_sync_at TEXT, last_result TEXT, ' +
   'created_at TEXT NOT NULL, updated_at TEXT NOT NULL)',
+
+  'CREATE TABLE IF NOT EXISTS sync_conflicts (' +
+  'id TEXT PRIMARY KEY, source_id TEXT NOT NULL, user_id TEXT NOT NULL, cipher_id TEXT NOT NULL, ' +
+  'local_updated_at TEXT NOT NULL, remote_updated_at TEXT NOT NULL, ' +
+  'resolution TEXT NOT NULL, status TEXT NOT NULL DEFAULT \'pending\', ' +
+  'created_at TEXT NOT NULL, updated_at TEXT NOT NULL, acknowledged_at TEXT, ' +
+  'UNIQUE(cipher_id, user_id))',
 ];
 
 async function executeSchemaStatement(db: D1Database, statement: string): Promise<void> {

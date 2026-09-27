@@ -24482,8 +24482,9 @@ var SCHEMA_STATEMENTS = [
   "CREATE TABLE IF NOT EXISTS domain_settings (user_id TEXT PRIMARY KEY, equivalent_domains TEXT NOT NULL DEFAULT '[]', custom_equivalent_domains TEXT NOT NULL DEFAULT '[]', excluded_global_equivalent_domains TEXT NOT NULL DEFAULT '[]', updated_at TEXT NOT NULL, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
   "ALTER TABLE domain_settings ADD COLUMN custom_equivalent_domains TEXT NOT NULL DEFAULT '[]'",
   "CREATE TABLE IF NOT EXISTS user_revisions (user_id TEXT PRIMARY KEY, revision_date TEXT NOT NULL, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
-  "CREATE TABLE IF NOT EXISTS ciphers (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, type INTEGER NOT NULL, folder_id TEXT, name TEXT, notes TEXT, favorite INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL, reprompt INTEGER, key TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, archived_at TEXT, deleted_at TEXT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+  "CREATE TABLE IF NOT EXISTS ciphers (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, type INTEGER NOT NULL, folder_id TEXT, name TEXT, notes TEXT, favorite INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL, reprompt INTEGER, key TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, archived_at TEXT, deleted_at TEXT, last_synced_at TEXT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
   "ALTER TABLE ciphers ADD COLUMN archived_at TEXT",
+  "ALTER TABLE ciphers ADD COLUMN last_synced_at TEXT",
   "CREATE INDEX IF NOT EXISTS idx_ciphers_user_updated ON ciphers(user_id, updated_at)",
   "CREATE INDEX IF NOT EXISTS idx_ciphers_user_archived ON ciphers(user_id, archived_at)",
   "CREATE INDEX IF NOT EXISTS idx_ciphers_user_deleted ON ciphers(user_id, deleted_at)",
@@ -24559,7 +24560,8 @@ var SCHEMA_STATEMENTS = [
   "CREATE INDEX IF NOT EXISTS idx_webauthn_challenges_user_scope ON webauthn_challenges(user_id, scope)",
   "CREATE TABLE IF NOT EXISTS login_attempts_ip (ip TEXT PRIMARY KEY, attempts INTEGER NOT NULL, locked_until INTEGER, updated_at INTEGER NOT NULL)",
   "CREATE TABLE IF NOT EXISTS used_attachment_download_tokens (jti TEXT PRIMARY KEY, expires_at INTEGER NOT NULL)",
-  "CREATE TABLE IF NOT EXISTS remote_sync_sources (id TEXT PRIMARY KEY, url TEXT NOT NULL, email TEXT NOT NULL, encrypted_password_hash TEXT NOT NULL, sync_interval_minutes INTEGER NOT NULL DEFAULT 60, enabled INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'idle', last_sync_at TEXT, last_result TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)"
+  "CREATE TABLE IF NOT EXISTS remote_sync_sources (id TEXT PRIMARY KEY, url TEXT NOT NULL, email TEXT NOT NULL, encrypted_password_hash TEXT NOT NULL, sync_interval_minutes INTEGER NOT NULL DEFAULT 60, enabled INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'idle', last_sync_at TEXT, last_result TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS sync_conflicts (id TEXT PRIMARY KEY, source_id TEXT NOT NULL, user_id TEXT NOT NULL, cipher_id TEXT NOT NULL, local_updated_at TEXT NOT NULL, remote_updated_at TEXT NOT NULL, resolution TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL, updated_at TEXT NOT NULL, acknowledged_at TEXT, UNIQUE(cipher_id, user_id))"
 ];
 async function executeSchemaStatement(db, statement) {
   try {
@@ -25020,7 +25022,8 @@ function parseCipherRow(row) {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       archivedAt: row.archived_at ?? parsed.archivedAt ?? parsed.archivedDate ?? null,
-      deletedAt: row.deleted_at ?? parsed.deletedAt ?? parsed.deletedDate ?? null
+      deletedAt: row.deleted_at ?? parsed.deletedAt ?? parsed.deletedDate ?? null,
+      lastSyncedAt: row.last_synced_at ?? parsed.lastSyncedAt ?? null
     };
   } catch {
     console.error("Corrupted cipher data, id:", row.id);
@@ -25028,7 +25031,7 @@ function parseCipherRow(row) {
   }
 }
 function selectCipherColumns() {
-  return "id, user_id, type, folder_id, name, notes, favorite, data, reprompt, key, created_at, updated_at, archived_at, deleted_at";
+  return "id, user_id, type, folder_id, name, notes, favorite, data, reprompt, key, created_at, updated_at, archived_at, deleted_at, last_synced_at";
 }
 async function getCipher(db, id) {
   const row = await db.prepare(`SELECT ${selectCipherColumns()} FROM ciphers WHERE id = ?`).bind(id).first();
@@ -25042,7 +25045,7 @@ async function saveCipher(db, safeBind, cipher) {
   const folderId = normalizeOptionalId(cipher.folderId);
   const data = buildCipherData(cipher, folderId);
   const stmt = db.prepare(
-    "INSERT INTO ciphers(id, user_id, type, folder_id, name, notes, favorite, data, reprompt, key, created_at, updated_at, archived_at, deleted_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET type=excluded.type, folder_id=excluded.folder_id, name=excluded.name, notes=excluded.notes, favorite=excluded.favorite, data=excluded.data, reprompt=excluded.reprompt, key=excluded.key, updated_at=excluded.updated_at, archived_at=excluded.archived_at, deleted_at=excluded.deleted_at WHERE user_id=excluded.user_id"
+    "INSERT INTO ciphers(id, user_id, type, folder_id, name, notes, favorite, data, reprompt, key, created_at, updated_at, archived_at, deleted_at, last_synced_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET type=excluded.type, folder_id=excluded.folder_id, name=excluded.name, notes=excluded.notes, favorite=excluded.favorite, data=excluded.data, reprompt=excluded.reprompt, key=excluded.key, updated_at=excluded.updated_at, archived_at=excluded.archived_at, deleted_at=excluded.deleted_at, last_synced_at=excluded.last_synced_at WHERE user_id=excluded.user_id"
   );
   await safeBind(
     stmt,
@@ -25059,7 +25062,8 @@ async function saveCipher(db, safeBind, cipher) {
     cipher.createdAt,
     cipher.updatedAt,
     cipher.archivedAt ?? null,
-    cipher.deletedAt
+    cipher.deletedAt,
+    cipher.lastSyncedAt ?? null
   ).run();
 }
 function sanitizeIds(ids) {
@@ -26513,7 +26517,7 @@ async function consumeAccountPasskeyChallenge(db, challengeHash, scope, userId, 
 // src/services/storage.ts
 var TWO_FACTOR_REMEMBER_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
 var STORAGE_SCHEMA_VERSION_KEY = "schema.version";
-var STORAGE_SCHEMA_VERSION = "2026-09-27-remote-sync-sources";
+var STORAGE_SCHEMA_VERSION = "2026-09-27-sync-conflicts";
 var REQUIRED_SCHEMA_TABLES = ["webauthn_credentials", "webauthn_challenges", "auth_requests", "totp_login_replays"];
 var StorageService = class _StorageService {
   constructor(db) {
@@ -27103,7 +27107,52 @@ var StorageService = class _StorageService {
   async deleteRemoteSyncSource(id) {
     await this.db.prepare("DELETE FROM remote_sync_sources WHERE id = ?").bind(id).run();
   }
+  // --- Sync conflicts ---
+  async listSyncConflicts(status) {
+    const sql = status ? "SELECT * FROM sync_conflicts WHERE status = ? ORDER BY updated_at DESC" : "SELECT * FROM sync_conflicts ORDER BY updated_at DESC";
+    const stmt = status ? this.db.prepare(sql).bind(status) : this.db.prepare(sql);
+    const rows = await stmt.all();
+    return (rows.results ?? []).map(mapSyncConflictRow);
+  }
+  async upsertSyncConflict(conflict) {
+    await this.db.prepare(
+      "INSERT INTO sync_conflicts(id, source_id, user_id, cipher_id, local_updated_at, remote_updated_at, resolution, status, created_at, updated_at, acknowledged_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(cipher_id, user_id) DO UPDATE SET source_id=excluded.source_id, local_updated_at=excluded.local_updated_at, remote_updated_at=excluded.remote_updated_at, resolution=excluded.resolution, status=excluded.status, updated_at=excluded.updated_at, acknowledged_at=excluded.acknowledged_at"
+    ).bind(
+      conflict.id,
+      conflict.sourceId,
+      conflict.userId,
+      conflict.cipherId,
+      conflict.localUpdatedAt,
+      conflict.remoteUpdatedAt,
+      conflict.resolution,
+      conflict.status,
+      conflict.createdAt,
+      conflict.updatedAt,
+      conflict.acknowledgedAt ?? null
+    ).run();
+  }
+  async acknowledgeSyncConflict(id) {
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    await this.db.prepare("UPDATE sync_conflicts SET status = 'acknowledged', acknowledged_at = ?, updated_at = ? WHERE id = ?").bind(now, now, id).run();
+    const row = await this.db.prepare("SELECT * FROM sync_conflicts WHERE id = ?").bind(id).first();
+    return row ? mapSyncConflictRow(row) : null;
+  }
 };
+function mapSyncConflictRow(row) {
+  return {
+    id: row.id,
+    sourceId: row.source_id,
+    userId: row.user_id,
+    cipherId: row.cipher_id,
+    localUpdatedAt: row.local_updated_at,
+    remoteUpdatedAt: row.remote_updated_at,
+    resolution: row.resolution,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    acknowledgedAt: row.acknowledged_at ?? null
+  };
+}
 function mapRemoteSyncSourceRow(row) {
   return {
     id: row.id,
@@ -38659,6 +38708,44 @@ async function downloadRemoteAttachment(url, accessToken, cipherId, attachment, 
     return false;
   }
 }
+async function syncAttachments(url, accessToken, remoteCipher, cipherId, env, storage, result) {
+  for (const attachment of remoteCipher.attachments ?? []) {
+    const localAttachment = {
+      id: String(attachment.id || crypto.randomUUID()),
+      cipherId,
+      fileName: String(attachment.fileName ?? ""),
+      size: Number(attachment.size) || 0,
+      sizeName: String(attachment.sizeName ?? ""),
+      key: attachment.key ?? null
+    };
+    await storage.saveAttachment(localAttachment);
+    result.attachments += 1;
+    const downloaded = await downloadRemoteAttachment(url, accessToken, cipherId, attachment, env, result.warnings);
+    if (downloaded) result.attachmentsDownloaded += 1;
+  }
+}
+async function recordSyncConflict(storage, source, user, existing, remoteVersion, resolution, result) {
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const conflict = {
+    id: crypto.randomUUID(),
+    sourceId: source.id,
+    userId: user.id,
+    cipherId: existing.id,
+    localUpdatedAt: existing.updatedAt,
+    remoteUpdatedAt: remoteVersion.updatedAt,
+    resolution,
+    status: "pending",
+    createdAt: now,
+    updatedAt: now,
+    acknowledgedAt: null
+  };
+  await storage.upsertSyncConflict(conflict);
+  const winner = resolution === "auto-remote" ? "\u8FDC\u7AEF" : "\u672C\u5730";
+  const other = resolution === "auto-remote" ? "\u672C\u5730" : "\u8FDC\u7AEF";
+  result.warnings.push(
+    `\u6761\u76EE ${existing.id.slice(0, 8)}\u2026 \u5728\u4E24\u7AEF\u5747\u6709\u4FEE\u6539\uFF08${other} ${existing.updatedAt} / \u8FDC\u7AEF ${remoteVersion.updatedAt}\uFF09\uFF0C\u5F53\u524D\u91C7\u7528${winner}\u7248\u672C\uFF0C\u53EF\u5728\u7BA1\u7406\u9875\u786E\u8BA4`
+  );
+}
 async function synchronizeRemoteSourceById(env, sourceId, options) {
   const storage = new StorageService(env.DB);
   const source = await storage.getRemoteSyncSource(sourceId);
@@ -38722,30 +38809,46 @@ async function synchronizeRemoteSourceById(env, sourceId, options) {
       for (const remoteCipher of syncData.ciphers ?? []) {
         const localCipher = buildLocalCipher(remoteCipher, user.id);
         const existing = await storage.getCipherForUser(localCipher.id, user.id);
-        if (existing) {
-          if (parseTs(localCipher.updatedAt) <= parseTs(existing.updatedAt)) {
-            result.skipped += 1;
-            continue;
+        if (!existing) {
+          result.added += 1;
+          localCipher.lastSyncedAt = localCipher.updatedAt;
+          await storage.saveCipher(localCipher);
+          await syncAttachments(source.url, accessToken, remoteCipher, localCipher.id, env, storage, result);
+          continue;
+        }
+        const remoteTs = parseTs(localCipher.updatedAt);
+        const localTs = parseTs(existing.updatedAt);
+        const baselineTs = parseTs(existing.lastSyncedAt);
+        const localEdited = baselineTs > 0 && localTs > baselineTs;
+        const remoteEdited = baselineTs > 0 && remoteTs > baselineTs;
+        const isConflict = localEdited && remoteEdited && remoteTs !== localTs;
+        if (remoteTs === localTs) {
+          result.skipped += 1;
+          if (!existing.lastSyncedAt || baselineTs !== localTs) {
+            existing.lastSyncedAt = existing.updatedAt;
+            await storage.saveCipher(existing);
+          }
+          continue;
+        }
+        if (remoteTs > localTs) {
+          if (isConflict) {
+            await recordSyncConflict(storage, source, user, existing, localCipher, "auto-remote", result);
           }
           result.updated += 1;
+          localCipher.lastSyncedAt = localCipher.updatedAt;
+          await storage.saveCipher(localCipher);
         } else {
-          result.added += 1;
+          if (isConflict) {
+            await recordSyncConflict(storage, source, user, existing, localCipher, "auto-local", result);
+          }
+          result.skipped += 1;
+          if (baselineTs !== localTs) {
+            existing.lastSyncedAt = existing.updatedAt;
+            await storage.saveCipher(existing);
+          }
+          continue;
         }
-        await storage.saveCipher(localCipher);
-        for (const attachment of remoteCipher.attachments ?? []) {
-          const localAttachment = {
-            id: String(attachment.id || crypto.randomUUID()),
-            cipherId: localCipher.id,
-            fileName: String(attachment.fileName ?? ""),
-            size: Number(attachment.size) || 0,
-            sizeName: String(attachment.sizeName ?? ""),
-            key: attachment.key ?? null
-          };
-          await storage.saveAttachment(localAttachment);
-          result.attachments += 1;
-          const downloaded = await downloadRemoteAttachment(source.url, accessToken, localCipher.id, attachment, env, result.warnings);
-          if (downloaded) result.attachmentsDownloaded += 1;
-        }
+        await syncAttachments(source.url, accessToken, remoteCipher, localCipher.id, env, storage, result);
       }
       await storage.updateRevisionDate(user.id);
       result.localUserId = user.id;
@@ -39010,6 +39113,38 @@ async function handleTriggerRemoteSyncSource(request, env, actorUser, sourceId) 
     outcome.result.ok ? 200 : 422
   );
 }
+async function handleListSyncConflicts(_request, env, actorUser) {
+  void actorUser;
+  const storage = new StorageService(env.DB);
+  const conflicts = await storage.listSyncConflicts("pending");
+  const sources = await storage.listRemoteSyncSources();
+  const sourceById = new Map(sources.map((s) => [s.id, s]));
+  const data = conflicts.map((conflict) => {
+    const source = sourceById.get(conflict.sourceId);
+    return {
+      id: conflict.id,
+      cipherId: conflict.cipherId,
+      localUpdatedAt: conflict.localUpdatedAt,
+      remoteUpdatedAt: conflict.remoteUpdatedAt,
+      resolution: conflict.resolution,
+      status: conflict.status,
+      createdAt: conflict.createdAt,
+      updatedAt: conflict.updatedAt,
+      sourceUrl: source?.url ?? null,
+      sourceEmail: source?.email ?? null
+    };
+  });
+  return jsonResponse({ object: "list", data });
+}
+async function handleAcknowledgeSyncConflict(_request, env, actorUser, conflictId) {
+  void actorUser;
+  const storage = new StorageService(env.DB);
+  const conflict = await storage.acknowledgeSyncConflict(conflictId);
+  if (!conflict) {
+    return errorResponse("Sync conflict not found", 404);
+  }
+  return jsonResponse({ object: "sync-conflict", id: conflict.id, status: conflict.status, acknowledgedAt: conflict.acknowledgedAt });
+}
 
 // src/router-admin-remote-sync.ts
 async function handleAdminRemoteSyncRoute(request, env, actorUser, path5, method) {
@@ -39018,6 +39153,17 @@ async function handleAdminRemoteSyncRoute(request, env, actorUser, path5, method
   }
   if (path5 === "/api/admin/remote-sync" && method === "POST") {
     return handleCreateRemoteSyncSource(request, env, actorUser);
+  }
+  const conflictsMatch = path5.match(/^\/api\/admin\/remote-sync\/conflicts(\/([a-f0-9-]+)\/ack)?$/i);
+  if (conflictsMatch) {
+    const conflictId = conflictsMatch[2];
+    if (!conflictId && method === "GET") {
+      return handleListSyncConflicts(request, env, actorUser);
+    }
+    if (conflictId && method === "POST") {
+      return handleAcknowledgeSyncConflict(request, env, actorUser, conflictId);
+    }
+    return null;
   }
   const itemMatch = path5.match(/^\/api\/admin\/remote-sync\/([a-f0-9-]+)(?:\/(trigger))?$/i);
   if (itemMatch) {

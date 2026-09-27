@@ -32,7 +32,7 @@
 - **密码管理全家桶**：登录项 / TOTP（含 Steam）/ Secure Notes / 附件 / Send / Passkey 登录
 - **安全**：2FA（TOTP / YubiKey / Passkey）、登录审批、设备管理、多用户邀请码
 - **云备份仍可用**：WebDAV / S3 定时备份
-- **多库同步 / 多主冗余**：后台可添加其他 NodeWarden 密码库（网址 + 邮箱 + 主密码）作为同步源，把远端条目同步到本地，支持定时同步；多台服务器互相添加为同步源即可形成冗余网格——任何节点可读写、任一宕机其余节点仍有全量密码，冲突按最后写入者胜出（见 README-LOCAL.md「多库同步」）
+- **多库同步 / 多主冗余**：后台可添加其他 NodeWarden 密码库（网址 + 邮箱 + 主密码）作为同步源，把远端条目同步到本地，支持定时同步；多台服务器互相添加为同步源即可形成冗余网格——任何节点可读写、任一宕机其余节点仍有全量密码，冲突按最后写入者胜出，并可在管理页查看/确认冲突（见 README-LOCAL.md「多库同步」）
 - **9 平台开箱即用**：见下方矩阵，GitHub Actions 一键编译发布到 Releases
 
 ## 🖥️ 平台矩阵
@@ -48,8 +48,26 @@
 
 ## 🚀 快速开始
 
+**一键运行（Linux x64）**：
+
 ```bash
-# Linux / macOS（macOS 需先执行 codesign --force --sign - 重新签名，见 README-MACOS.md）
+curl -sL -o nw.zip https://github.com/guimoyun/nodewarden-WL/releases/latest/download/nodewarden-linux-x64.zip \
+  && unzip -o nw.zip \
+  && export JWT_SECRET="$(openssl rand -hex 24)" \
+  && ./nodewarden-linux-x64
+```
+
+**源码直跑（需 Node ≥ 22）**：
+
+```bash
+git clone https://github.com/guimoyun/nodewarden-WL.git && cd nodewarden-WL \
+  && npm install && npm run build \
+  && export JWT_SECRET="$(openssl rand -hex 24)" && npx tsx local/index.ts
+```
+
+**手动分步（Linux / macOS，macOS 需先 `codesign --force --sign -` 重新签名，见 README-MACOS.md）**：
+
+```bash
 export JWT_SECRET="$(openssl rand -hex 24)"
 ./nodewarden-linux-x64          # 默认监听 0.0.0.0:8787，数据存 ./nw-data
 ```

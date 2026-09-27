@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'preact/hooks';
-import { Clock, Globe2, Plus, RefreshCw, ShieldAlert, Trash2 } from 'lucide-preact';
+import { AlertTriangle, CheckCircle2, Clock, Globe2, Plus, RefreshCw, ShieldAlert, Trash2 } from 'lucide-preact';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import LoadingState from '@/components/LoadingState';
 import { createAuthedFetch } from '@/lib/api/auth';
 import {
   type RemoteSyncSourceRecord,
+  type SyncConflictRecord,
+  ackSyncConflict,
   createRemoteSyncSource,
   deleteRemoteSyncSource,
   listRemoteSyncSources,
+  listSyncConflicts,
   triggerRemoteSyncSource,
   updateRemoteSyncSource,
 } from '@/lib/api/remote-sync';
@@ -50,16 +53,44 @@ export default function RemoteSyncPage(props: RemoteSyncPageProps): JSX.Element 
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [conflicts, setConflicts] = useState<SyncConflictRecord[]>([]);
+  const [conflictBusyId, setConflictBusyId] = useState<string | null>(null);
 
   async function load(): Promise<void> {
     setLoading(true);
     try {
-      setSources(await listRemoteSyncSources(authedFetch));
+      const [sourceList, conflictList] = await Promise.all([
+        listRemoteSyncSources(authedFetch),
+        listSyncConflicts(authedFetch),
+      ]);
+      setSources(sourceList);
+      setConflicts(conflictList);
       setLoadError(null);
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function refreshConflicts(): Promise<void> {
+    try {
+      setConflicts(await listSyncConflicts(authedFetch));
+    } catch {
+      // Conflicts are best-effort; the main source list still works.
+    }
+  }
+
+  async function handleAckConflict(id: string): Promise<void> {
+    setConflictBusyId(id);
+    try {
+      await ackSyncConflict(authedFetch, id);
+      await refreshConflicts();
+      props.onNotify('success', t('txt_remote_sync_conflict_acked'));
+    } catch (error) {
+      props.onNotify('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setConflictBusyId(null);
     }
   }
 
@@ -314,6 +345,52 @@ export default function RemoteSyncPage(props: RemoteSyncPageProps): JSX.Element 
           );
         })}
       </section>
+
+      {conflicts.length > 0 && (
+        <section className="card">
+          <div className="section-head">
+            <h3>
+              <AlertTriangle size={14} className="remote-sync-row-icon" />
+              {t('txt_remote_sync_conflicts_title')}
+            </h3>
+            <span className="remote-sync-status remote-sync-status-error">{conflicts.length}</span>
+          </div>
+          {conflicts.map((conflict) => (
+            <div key={conflict.id} className="remote-sync-row">
+              <div className="remote-sync-row-main">
+                <div className="remote-sync-row-title">
+                  <ShieldAlert size={14} className="remote-sync-row-icon" />
+                  <strong>{conflict.cipherId.slice(0, 8)}…</strong>
+                  {conflict.sourceUrl && (
+                    <span className="muted-inline">{conflict.sourceUrl.replace(/^https?:\/\//i, '')}</span>
+                  )}
+                </div>
+                <small className="muted-inline">
+                  {t('txt_remote_sync_conflict_desc', {
+                    local: new Date(conflict.localUpdatedAt).toLocaleString(),
+                    remote: new Date(conflict.remoteUpdatedAt).toLocaleString(),
+                    resolution:
+                      conflict.resolution === 'auto-remote'
+                        ? t('txt_remote_sync_conflict_resolution_remote')
+                        : t('txt_remote_sync_conflict_resolution_local'),
+                  })}
+                </small>
+              </div>
+              <div className="actions remote-sync-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary small"
+                  disabled={conflictBusyId === conflict.id}
+                  onClick={() => void handleAckConflict(conflict.id)}
+                >
+                  <CheckCircle2 size={13} className="btn-icon" />
+                  {conflictBusyId === conflict.id ? t('txt_remote_sync_syncing') : t('txt_remote_sync_conflict_ack')}
+                </button>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       {!!deleteId && (
         <ConfirmDialog

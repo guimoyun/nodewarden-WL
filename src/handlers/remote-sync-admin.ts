@@ -235,3 +235,43 @@ export async function handleTriggerRemoteSyncSource(request: Request, env: Env, 
     outcome.result.ok ? 200 : 422
   );
 }
+
+// GET /api/admin/remote-sync/conflicts
+// Lists sync conflicts (entries edited on both nodes since the last merge),
+// newest first, with the resolving sync source's URL/email attached.
+export async function handleListSyncConflicts(_request: Request, env: Env, actorUser: User): Promise<Response> {
+  void actorUser;
+  const storage = new StorageService(env.DB);
+  const conflicts = await storage.listSyncConflicts('pending');
+  const sources = await storage.listRemoteSyncSources();
+  const sourceById = new Map(sources.map((s) => [s.id, s]));
+  const data = conflicts.map((conflict) => {
+    const source = sourceById.get(conflict.sourceId);
+    return {
+      id: conflict.id,
+      cipherId: conflict.cipherId,
+      localUpdatedAt: conflict.localUpdatedAt,
+      remoteUpdatedAt: conflict.remoteUpdatedAt,
+      resolution: conflict.resolution,
+      status: conflict.status,
+      createdAt: conflict.createdAt,
+      updatedAt: conflict.updatedAt,
+      sourceUrl: source?.url ?? null,
+      sourceEmail: source?.email ?? null,
+    };
+  });
+  return jsonResponse({ object: 'list', data });
+}
+
+// POST /api/admin/remote-sync/conflicts/:id/ack
+// Marks a sync conflict as acknowledged (the current last-write-wins result is
+// accepted). It no longer shows up in the pending list.
+export async function handleAcknowledgeSyncConflict(_request: Request, env: Env, actorUser: User, conflictId: string): Promise<Response> {
+  void actorUser;
+  const storage = new StorageService(env.DB);
+  const conflict = await storage.acknowledgeSyncConflict(conflictId);
+  if (!conflict) {
+    return errorResponse('Sync conflict not found', 404);
+  }
+  return jsonResponse({ object: 'sync-conflict', id: conflict.id, status: conflict.status, acknowledgedAt: conflict.acknowledgedAt });
+}

@@ -7,7 +7,32 @@ NodeWarden（Bitwarden 兼容密码管理服务器）的**本地化独立可执�
 全部平台产物与构建方法见 **[BUILD-RELEASES.md](BUILD-RELEASES.md)**，各平台专属说明见
 `README-WINDOWS.md` / `README-MACOS.md`。以下以 Linux x64 为例。
 
-## 一、快速开始（3 步）
+## 一、快速开始
+
+### 一键运行（推荐，下载即用）
+
+```bash
+# Linux x64 一键：下载最新发布包 → 解压 → 生成密钥 → 启动
+curl -sL -o nodewarden.zip https://github.com/guimoyun/nodewarden-WL/releases/latest/download/nodewarden-linux-x64.zip \
+  && unzip -o nodewarden.zip \
+  && export JWT_SECRET="$(openssl rand -hex 24)" \
+  && ./nodewarden-linux-x64
+# 浏览器打开 http://<服务器IP>:8787 ，首次注册的账号自动成为管理员
+```
+
+> 其它平台把文件名换成对应产物即可（`nodewarden-win-x64.exe.zip` / `nodewarden-macos-arm64.zip` 等，
+> 产物清单见 BUILD-RELEASES.md 平台矩阵）。macOS 需先 `codesign --force --sign -` 重新签名。
+
+### 源码直跑（需 Node.js ≥ 22）
+
+```bash
+git clone https://github.com/guimoyun/nodewarden-WL.git && cd nodewarden-WL \
+  && npm install && npm run build \
+  && export JWT_SECRET="$(openssl rand -hex 24)" \
+  && npx tsx local/index.ts
+```
+
+### 手动分步（二进制方式）
 
 ```bash
 # 1. 设置密钥（32+ 随机字符，务必保存，换密钥 = 全部会话失效）
@@ -117,6 +142,11 @@ nw-data/
 的版本最终会传播到所有节点。实测验证过的拓扑：两台互指 → 条目双向到达、冲突收敛、删除传播、
 重同步无重复（测试脚本：`scripts/test-remote-sync-multi-master.ts`）。
 
+**冲突提示**：多主下若**同一条目在两端都被修改**（且版本不一致），同步会按时间戳自动采用较新
+版本，同时在管理页「远程库同步」顶部列出 **同步冲突** 区：显示条目、两端修改时间、当前采用的
+版本（本地/远端）及来源库。确认后点「我知道了」消除提示（不影响条目内容；想切换版本直接编辑
+该条目即可，会随下一次同步传播到所有节点）。
+
 **用法**：
 
 1. 管理员登录 Web Vault → 设置 → 系统管理 → 远程库同步；
@@ -137,7 +167,8 @@ nw-data/
 - 删除同步源不会删除已同步到本地的条目。
 
 **管理 API**（管理员）：`GET/POST /api/admin/remote-sync`、`PUT/DELETE /api/admin/remote-sync/:id`、
-`POST /api/admin/remote-sync/:id/trigger`（立即同步）。
+`POST /api/admin/remote-sync/:id/trigger`（立即同步）、`GET /api/admin/remote-sync/conflicts`
+（待确认冲突列表）、`POST /api/admin/remote-sync/conflicts/:id/ack`（确认冲突）。
 
 ## 六、本地化改造说明（相对 Cloudflare 版）
 

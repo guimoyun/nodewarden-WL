@@ -5,6 +5,8 @@ import {
   handleUpdateRemoteSyncSource,
   handleDeleteRemoteSyncSource,
   handleTriggerRemoteSyncSource,
+  handleListSyncConflicts,
+  handleAcknowledgeSyncConflict,
 } from './handlers/remote-sync-admin';
 
 export async function handleAdminRemoteSyncRoute(
@@ -20,6 +22,20 @@ export async function handleAdminRemoteSyncRoute(
 
   if (path === '/api/admin/remote-sync' && method === 'POST') {
     return handleCreateRemoteSyncSource(request, env, actorUser);
+  }
+
+  // /api/admin/remote-sync/conflicts — conflict listing & acknowledgment
+  // (matched before the generic /:id routes below).
+  const conflictsMatch = path.match(/^\/api\/admin\/remote-sync\/conflicts(\/([a-f0-9-]+)\/ack)?$/i);
+  if (conflictsMatch) {
+    const conflictId = conflictsMatch[2];
+    if (!conflictId && method === 'GET') {
+      return handleListSyncConflicts(request, env, actorUser);
+    }
+    if (conflictId && method === 'POST') {
+      return handleAcknowledgeSyncConflict(request, env, actorUser, conflictId);
+    }
+    return null;
   }
 
   const itemMatch = path.match(/^\/api\/admin\/remote-sync\/([a-f0-9-]+)(?:\/(trigger))?$/i);
