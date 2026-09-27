@@ -1550,3 +1550,19 @@ input[type='file'].input::file-selector-button {
   color: #8a6d3b;
   background: rgba(181, 137, 0, 0.12);
 }
+
+/* One-click update page */
+.info-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 12px 0;
+}
+.info-grid > div {
+  min-width: 160px;
+}
+.info-grid small {
+  display: block;
+  margin-top: 4px;
+  max-width: 640px;
+}

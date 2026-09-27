@@ -1500,6 +1500,25 @@ Object.assign(sv, {
   "txt_remote_sync_delete_failed": "Kunde inte ta bort synkroniseringskällan.",
   "txt_never": "Aldrig",
 
+
+  "nav_update": "Uppdatera",
+  "txt_update_title": "Uppdatering med ett klick",
+  "txt_update_desc": "Kontrollerar GitHub Releases och ersätter automatiskt körbara filen och Web Vault-resurserna.",
+  "txt_update_source": "Uppdateringskälla: {source}",
+  "txt_update_check": "Sök efter uppdateringar",
+  "txt_update_checking": "Kontrollerar…",
+  "txt_update_current": "Nuvarande version",
+  "txt_update_latest": "Senaste versionen",
+  "txt_update_platform": "Plattform",
+  "txt_update_package": "Paket",
+  "txt_update_notes": "Versionsanteckningar",
+  "txt_update_apply": "Uppdatera nu",
+  "txt_update_applying": "Laddar ner och installerar…",
+  "txt_update_manual": "Manuell nedladdning",
+  "txt_update_hint": "Klicka på «Sök efter uppdateringar» för att se om det finns en nyare version.",
+  "txt_update_up_to_date": "Du har redan senaste versionen ({version}).",
+  "txt_update_check_failed": "Det gick inte att söka efter uppdateringar",
+  "txt_update_apply_failed": "Det gick inte att installera uppdateringen",
 });
 
 Object.assign(sv, { "txt_password_security_last_checked": "Senast kontrollerad: {value}" });

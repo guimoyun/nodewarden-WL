@@ -1532,7 +1532,26 @@ Object.assign(zhTW, {
   "txt_remote_sync_update_failed": "更新同步源失敗。",
   "txt_remote_sync_trigger_failed": "啟動同步失敗。",
   "txt_remote_sync_delete_failed": "移除同步源失敗。",
-  "txt_never": "從未"
+  "txt_never": "從未",
+  "nav_update": "更新",
+  "txt_update_title": "一鍵更新",
+  "txt_update_desc": "從 GitHub Releases 檢查並下載本程式的最新版本，自動替換可執行檔與前端資源。",
+  "txt_update_source": "更新來源：{source}",
+  "txt_update_check": "檢查更新",
+  "txt_update_checking": "檢查中…",
+  "txt_update_current": "目前版本",
+  "txt_update_latest": "最新版本",
+  "txt_update_platform": "平台套件",
+  "txt_update_package": "更新套件",
+  "txt_update_notes": "更新說明",
+  "txt_update_apply": "一鍵更新",
+  "txt_update_applying": "正在下載並套用更新…",
+  "txt_update_manual": "手動下載",
+  "txt_update_hint": "點擊「檢查更新」查看是否有新版本。",
+  "txt_update_up_to_date": "目前已是最新版本（{version}）。",
+  "txt_update_check_failed": "檢查更新失敗",
+  "txt_update_apply_failed": "套用更新失敗",
+
 });
 
 export default zhTW;

@@ -57,6 +57,13 @@ curl -sL -o nw.zip https://github.com/guimoyun/nodewarden-WL/releases/latest/dow
   && ./nodewarden-linux-x64
 ```
 
+**一键注册系统服务（Debian / Ubuntu / Alpine，开机自启）**：
+
+```bash
+sudo ./nodewarden-linux-x64 --install-service   # 自动识别 systemd / OpenRC，自动生成密钥
+./nodewarden-linux-x64 --help                   # 查看全部命令
+```
+
 **源码直跑（需 Node ≥ 22）**：
 
 ```bash

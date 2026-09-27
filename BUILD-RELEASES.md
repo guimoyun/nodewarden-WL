@@ -29,7 +29,8 @@ npm install && npm run build          # 产出 dist/
 
 # 2. 打包后端为单文件 CJS（一次即可，blob 平台无关）
 npx esbuild local/index.ts --bundle --platform=node --format=cjs --target=node22 \
-  --outfile=dist-local/nodewarden.cjs --external:bufferutil --external:utf-8-validate
+  --outfile=dist-local/nodewarden.cjs --external:bufferutil --external:utf-8-validate \
+  --define:__APP_VERSION__='"v1.8.0-local"'   # 版本号会随二进制写入，用于"一键更新"比对
 
 # 3. 生成 SEA blob（一次即可）
 cat > dist-local/sea-config.json <<'EOF'

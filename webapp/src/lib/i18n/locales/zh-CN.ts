@@ -1532,7 +1532,26 @@ Object.assign(zhCN, {
   "txt_remote_sync_update_failed": "更新同步源失败。",
   "txt_remote_sync_trigger_failed": "启动同步失败。",
   "txt_remote_sync_delete_failed": "移除同步源失败。",
-  "txt_never": "从未"
+  "txt_never": "从未",
+  "nav_update": "更新",
+  "txt_update_title": "一键更新",
+  "txt_update_desc": "从 GitHub Releases 检查并下载本程序的最新版本，自动替换可执行文件与前端资源。",
+  "txt_update_source": "更新源：{source}",
+  "txt_update_check": "检查更新",
+  "txt_update_checking": "检查中…",
+  "txt_update_current": "当前版本",
+  "txt_update_latest": "最新版本",
+  "txt_update_platform": "平台包",
+  "txt_update_package": "更新包",
+  "txt_update_notes": "更新说明",
+  "txt_update_apply": "一键更新",
+  "txt_update_applying": "正在下载并应用更新…",
+  "txt_update_manual": "手动下载",
+  "txt_update_hint": "点击「检查更新」查看是否有新版本。",
+  "txt_update_up_to_date": "当前已是最新版本（{version}）。",
+  "txt_update_check_failed": "检查更新失败",
+  "txt_update_apply_failed": "应用更新失败",
+
 });
 
 export default zhCN;

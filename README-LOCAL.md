@@ -23,6 +23,22 @@ curl -sL -o nodewarden.zip https://github.com/guimoyun/nodewarden-WL/releases/la
 > 其它平台把文件名换成对应产物即可（`nodewarden-win-x64.exe.zip` / `nodewarden-macos-arm64.zip` 等，
 > 产物清单见 BUILD-RELEASES.md 平台矩阵）。macOS 需先 `codesign --force --sign -` 重新签名。
 
+### 一键注册系统服务（Debian / Ubuntu / Alpine，开机自启）
+
+```bash
+# 把二进制放到服务器后，以 root 执行（自动识别 systemd / OpenRC）
+sudo ./nodewarden-linux-x64 --install-service
+#    自动完成：生成 JWT_SECRET 并保存到 /etc/nodewarden.env（0600，不出现在 systemctl cat）
+#              Debian/Ubuntu → 写入 /etc/systemd/system/nodewarden.service 并 enable + restart
+#              Alpine      → 写入 /etc/init.d/nodewarden 并 rc-update add default + start
+
+sudo ./nodewarden-linux-x64 --uninstall-service   # 卸载（保留 /etc/nodewarden.env，重装可复用密钥）
+./nodewarden-linux-x64 --help                      # 查看全部命令与环境变量
+```
+
+> 已安装为服务后，**Web Vault 的「程序设置 → 一键更新」**可直接检查并应用 GitHub Releases 的新版本，
+> 更新完成后服务会自动重启，无需手动操作。
+
 ### 源码直跑（需 Node.js ≥ 22）
 
 ```bash
@@ -64,6 +80,8 @@ export JWT_SECRET="$(openssl rand -hex 24)"
 | `WEBAUTHN_RP_NAME` | `NodeWarden` | Passkey 显示名 |
 | `WEBAUTHN_ALLOWED_ORIGINS` | 自动 | 允许的 Passkey 来源（逗号分隔） |
 | `HIDE_WEB_VAULT` | 未设置 | 设为 `1` 时隐藏 Web Vault 页面（仅用 API/客户端） |
+| `NODEWARDEN_UPDATE_TOKEN` | 未设置 | 一键更新的 GitHub Token（可选）：提升 API 限流额度（未认证 60 次/小时/IP） |
+| `NODEWARDEN_UPDATE_MIRROR` | 未设置 | 一键更新的下载镜像前缀（可选，国内加速）：如 `https://ghproxy.com/` |
 
 ## 三、对接 Bitwarden 官方客户端
 
@@ -77,7 +95,12 @@ export JWT_SECRET="$(openssl rand -hex 24)"
 Passkey 登录、2FA（TOTP/YubiKey/Passkey）、实时推送同步（WebSocket）、设备管理、登录审批、
 多用户邀请码、WebDAV/S3 云备份。
 
-## 四、systemd 常驻运行（生产推荐）
+## 四、系统服务常驻（生产推荐，一键注册）
+
+**首选 `--install-service`（见快速开始）**，它自动完成密钥生成、服务文件、开机自启与启动。
+如需完全手工配置，可参考以下等价内容。
+
+### systemd（Debian / Ubuntu / CentOS）
 
 创建 `/etc/systemd/system/nodewarden.service`：
 
@@ -169,6 +192,21 @@ nw-data/
 **管理 API**（管理员）：`GET/POST /api/admin/remote-sync`、`PUT/DELETE /api/admin/remote-sync/:id`、
 `POST /api/admin/remote-sync/:id/trigger`（立即同步）、`GET /api/admin/remote-sync/conflicts`
 （待确认冲突列表）、`POST /api/admin/remote-sync/conflicts/:id/ack`（确认冲突）。
+
+## 五点六、一键更新（程序设置 → 一键更新）
+
+Web Vault 的「程序设置 → 一键更新」页（需管理员）支持从 GitHub Releases 检查并应用新版本：
+
+- 点击「检查更新」→ 展示当前版本 / 最新版本 / 平台包名 / 更新说明；
+- 有新版本时点击「一键更新」→ 后端下载对应平台的 zip 包，解压后在后台完成：
+  - 替换可执行文件本体（Linux/macOS 用 `cp+mv` 原子替换；Windows 用 `taskkill → xcopy → copy`）；
+  - 覆盖 `dist/` 前端资源；
+  - 若已注册 systemd 服务则 `systemctl restart nodewarden`，否则自动后台重启；
+- 更新源固定为 `https://github.com/guimoyun/nodewarden-WL/releases`；
+- 也提供「手动下载」链接直接取包。
+
+> 注意：GitHub Releases 的版本标签（如 v1.1.0）需高于二进制内置版本号才会提示可更新；
+> 版本号在编译时写入（`--define:__APP_VERSION__`），未注入时回退为 `v1.8.0-local`。
 
 ## 六、本地化改造说明（相对 Cloudflare 版）
 

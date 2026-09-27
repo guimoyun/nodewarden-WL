@@ -1500,6 +1500,25 @@ Object.assign(fi, {
   "txt_remote_sync_delete_failed": "Synkronointilähteen poisto epäonnistui.",
   "txt_never": "Ei koskaan",
 
+
+  "nav_update": "Päivitys",
+  "txt_update_title": "Päivitys yhdellä napsautuksella",
+  "txt_update_desc": "Tarkistaa GitHub Releases -palvelusta uusimman version ja korvaa suoritettavan tiedoston ja Web Vault -resurssit automaattisesti.",
+  "txt_update_source": "Päivityslähde: {source}",
+  "txt_update_check": "Tarkista päivitykset",
+  "txt_update_checking": "Tarkistetaan…",
+  "txt_update_current": "Nykyinen versio",
+  "txt_update_latest": "Uusin versio",
+  "txt_update_platform": "Alusta",
+  "txt_update_package": "Paketti",
+  "txt_update_notes": "Julkaisutiedot",
+  "txt_update_apply": "Päivitä nyt",
+  "txt_update_applying": "Ladataan ja asennetaan…",
+  "txt_update_manual": "Lataa manuaalisesti",
+  "txt_update_hint": "Napsauta «Tarkista päivitykset» nähdäksesi, onko uudempi versio saatavilla.",
+  "txt_update_up_to_date": "Käytössä on jo uusin versio ({version}).",
+  "txt_update_check_failed": "Päivitysten tarkistaminen epäonnistui",
+  "txt_update_apply_failed": "Päivityksen asentaminen epäonnistui",
 });
 
 Object.assign(fi, { "txt_password_security_last_checked": "Tarkistettu viimeksi: {value}" });

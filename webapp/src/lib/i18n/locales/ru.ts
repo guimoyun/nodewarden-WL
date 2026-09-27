@@ -1500,6 +1500,25 @@ Object.assign(ru, {
   "txt_remote_sync_delete_failed": "Не удалось удалить источник синхронизации.",
   "txt_never": "Никогда",
 
+
+  "nav_update": "Обновление",
+  "txt_update_title": "Обновление в один клик",
+  "txt_update_desc": "Проверяет GitHub Releases на наличие новой версии и автоматически заменяет исполняемый файл и ресурсы Web Vault.",
+  "txt_update_source": "Источник обновлений: {source}",
+  "txt_update_check": "Проверить обновления",
+  "txt_update_checking": "Проверка…",
+  "txt_update_current": "Текущая версия",
+  "txt_update_latest": "Последняя версия",
+  "txt_update_platform": "Платформа",
+  "txt_update_package": "Пакет",
+  "txt_update_notes": "Примечания к выпуску",
+  "txt_update_apply": "Обновить сейчас",
+  "txt_update_applying": "Загрузка и применение обновления…",
+  "txt_update_manual": "Скачать вручную",
+  "txt_update_hint": "Нажмите «Проверить обновления», чтобы узнать о новой версии.",
+  "txt_update_up_to_date": "Уже установлена последняя версия ({version}).",
+  "txt_update_check_failed": "Не удалось проверить обновления",
+  "txt_update_apply_failed": "Не удалось применить обновление",
 });
 
 Object.assign(ru, { "txt_password_security_last_checked": "Последняя проверка: {value}" });

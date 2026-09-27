@@ -1552,7 +1552,26 @@ Object.assign(en, {
   "txt_remote_sync_update_failed": "Failed to update sync source.",
   "txt_remote_sync_trigger_failed": "Failed to start sync.",
   "txt_remote_sync_delete_failed": "Failed to remove sync source.",
-  "txt_never": "Never"
+  "txt_never": "Never",
+  "nav_update": "Update",
+  "txt_update_title": "One-click Update",
+  "txt_update_desc": "Checks GitHub Releases for a newer build of this program and replaces the executable and Web Vault assets automatically.",
+  "txt_update_source": "Update source: {source}",
+  "txt_update_check": "Check for updates",
+  "txt_update_checking": "Checking…",
+  "txt_update_current": "Current version",
+  "txt_update_latest": "Latest version",
+  "txt_update_platform": "Platform package",
+  "txt_update_package": "Package",
+  "txt_update_notes": "Release notes",
+  "txt_update_apply": "Update now",
+  "txt_update_applying": "Downloading and applying update…",
+  "txt_update_manual": "Manual download",
+  "txt_update_hint": "Click \"Check for updates\" to see whether a newer version is available.",
+  "txt_update_up_to_date": "Already on the latest version ({version}).",
+  "txt_update_check_failed": "Failed to check for updates",
+  "txt_update_apply_failed": "Failed to apply update",
+
 });
 
 export default en;

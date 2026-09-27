@@ -4303,13 +4303,13 @@ function __disposeResources(env) {
   }
   return next();
 }
-function __rewriteRelativeImportExtension(path5, preserveJsx) {
-  if (typeof path5 === "string" && /^\.\.?\//.test(path5)) {
-    return path5.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
+function __rewriteRelativeImportExtension(path6, preserveJsx) {
+  if (typeof path6 === "string" && /^\.\.?\//.test(path6)) {
+    return path6.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
       return tsx ? preserveJsx ? ".jsx" : ".js" : d && (!ext || !cm) ? m : d + ext + "." + cm.toLowerCase() + "js";
     });
   }
-  return path5;
+  return path6;
 }
 var extendStatics, __assign, __createBinding, __setModuleDefault, ownKeys, _SuppressedError, tslib_es6_default;
 var init_tslib_es6 = __esm({
@@ -13157,14 +13157,14 @@ var require_dependency_container = __commonJS({
           provider = providerOrConstructor;
         }
         if (providers_1.isTokenProvider(provider)) {
-          const path5 = [token];
+          const path6 = [token];
           let tokenProvider = provider;
           while (tokenProvider != null) {
             const currentToken = tokenProvider.useToken;
-            if (path5.includes(currentToken)) {
-              throw new Error(`Token registration cycle detected! ${[...path5, currentToken].join(" -> ")}`);
+            if (path6.includes(currentToken)) {
+              throw new Error(`Token registration cycle detected! ${[...path6, currentToken].join(" -> ")}`);
             }
-            path5.push(currentToken);
+            path6.push(currentToken);
             const registration = this._registry.get(currentToken);
             if (registration && providers_1.isTokenProvider(registration.provider)) {
               tokenProvider = registration.provider;
@@ -20215,7 +20215,7 @@ var require_websocket = __commonJS({
     var http = require("http");
     var net = require("net");
     var tls = require("tls");
-    var { randomBytes: randomBytes2, createHash } = require("crypto");
+    var { randomBytes: randomBytes3, createHash } = require("crypto");
     var { Duplex, Readable: Readable2 } = require("stream");
     var { URL: URL2 } = require("url");
     var PerMessageDeflate2 = require_permessage_deflate();
@@ -20753,7 +20753,7 @@ var require_websocket = __commonJS({
         }
       }
       const defaultPort = isSecure ? 443 : 80;
-      const key = randomBytes2(16).toString("base64");
+      const key = randomBytes3(16).toString("base64");
       const request = isSecure ? https.request : http.request;
       const protocolSet = /* @__PURE__ */ new Set();
       let perMessageDeflate;
@@ -21962,11 +21962,11 @@ async function getPushAccessToken(env) {
   };
   return token;
 }
-async function postToPushRelay(env, path5, body) {
+async function postToPushRelay(env, path6, body) {
   const token = await getPushAccessToken(env);
   if (!token) return false;
   const response = await fetchPushEndpoint(
-    `${PUSH_RELAY_URI}${path5}`,
+    `${PUSH_RELAY_URI}${path6}`,
     {
       method: "POST",
       headers: {
@@ -21976,11 +21976,11 @@ async function postToPushRelay(env, path5, body) {
       },
       body: body === void 0 ? void 0 : JSON.stringify(body)
     },
-    `Bitwarden push relay request failed: ${path5}`
+    `Bitwarden push relay request failed: ${path6}`
   );
   if (!response) return false;
   if (!response.ok) {
-    console.error("Bitwarden push relay request failed:", path5, response.status, await response.text().catch(() => ""));
+    console.error("Bitwarden push relay request failed:", path6, response.status, await response.text().catch(() => ""));
     return false;
   }
   return true;
@@ -23587,8 +23587,8 @@ function isBackupDueNow(destination, now, windowMinutes = BACKUP_SCHEDULER_WINDO
 function isBackupArchiveName(name) {
   return /\.zip$/i.test(String(name || "").trim());
 }
-function encodePathSegments(path5) {
-  return path5.split("/").filter(Boolean).map((segment) => encodeURIComponent(segment)).join("/");
+function encodePathSegments(path6) {
+  return path6.split("/").filter(Boolean).map((segment) => encodeURIComponent(segment)).join("/");
 }
 function trimSlashes(value) {
   let next = String(value || "");
@@ -23599,8 +23599,8 @@ function trimSlashes(value) {
 function buildJoinedPath(...segments) {
   return segments.map(trimSlashes).filter(Boolean).join("/");
 }
-function normalizeRelativePath(path5) {
-  const normalized = trimSlashes(path5).replace(/\\/g, "/");
+function normalizeRelativePath(path6) {
+  const normalized = trimSlashes(path6).replace(/\\/g, "/");
   if (!normalized) return "";
   const parts = normalized.split("/").filter(Boolean);
   if (parts.some((part) => part === "." || part === "..")) {
@@ -23608,14 +23608,14 @@ function normalizeRelativePath(path5) {
   }
   return parts.join("/");
 }
-function basename(path5) {
-  const normalized = trimSlashes(path5);
+function basename(path6) {
+  const normalized = trimSlashes(path6);
   if (!normalized) return "";
   const parts = normalized.split("/").filter(Boolean);
   return parts[parts.length - 1] || "";
 }
-function parentPath(path5) {
-  const normalized = normalizeRelativePath(path5);
+function parentPath(path6) {
+  const normalized = normalizeRelativePath(path6);
   if (!normalized) return null;
   const parts = normalized.split("/");
   parts.pop();
@@ -27233,8 +27233,8 @@ var DEFAULT_CORS_HEADERS = [
   "X-Device-Name",
   "X-NodeWarden-Web-Session"
 ];
-function isWildcardCorsPath(path5) {
-  return path5.startsWith("/icons/") || path5.startsWith("/fill-assist/") || path5 === "/v1/assetlinks:check" || path5 === "/api/v1/assetlinks:check" || path5 === "/config" || path5 === "/api/config" || path5 === "/api/version";
+function isWildcardCorsPath(path6) {
+  return path6.startsWith("/icons/") || path6.startsWith("/fill-assist/") || path6 === "/v1/assetlinks:check" || path6 === "/api/v1/assetlinks:check" || path6 === "/config" || path6 === "/api/config" || path6 === "/api/version";
 }
 function getCorsPolicy(request, env) {
   const url = new URL(request.url);
@@ -28702,8 +28702,8 @@ function normalizeParsedBackupDb(value) {
 }
 function createZipEntries(files) {
   const entries = {};
-  for (const [path5, bytes] of Object.entries(files)) {
-    entries[path5] = [bytes, { level: BACKUP_TEXT_COMPRESSION_LEVEL }];
+  for (const [path6, bytes] of Object.entries(files)) {
+    entries[path6] = [bytes, { level: BACKUP_TEXT_COMPRESSION_LEVEL }];
   }
   return entries;
 }
@@ -29296,22 +29296,22 @@ async function prepareRemoteAttachmentPayload(env, payload, files, source) {
     const lookupKey = `${cipherId}/${attachmentId}`;
     const ref = manifestLookup.get(lookupKey);
     const sizeBytes = ref?.sizeBytes || Number(row.size || 0) || 0;
-    const path5 = ref ? `attachments/${ref.blobName}` : `attachments/${lookupKey}`;
+    const path6 = ref ? `attachments/${ref.blobName}` : `attachments/${lookupKey}`;
     const inlinePath = `attachments/${cipherId}/${attachmentId}.bin`;
     if (files[inlinePath]) {
       nextAttachments.push(row);
       continue;
     }
     if (!ref) {
-      skippedItems.push({ kind: "attachment", path: path5, sizeBytes });
+      skippedItems.push({ kind: "attachment", path: path6, sizeBytes });
       continue;
     }
     if (storageKind === "kv" && sizeBytes > KV_MAX_OBJECT_BYTES) {
-      skippedItems.push({ kind: "attachment", path: path5, sizeBytes });
+      skippedItems.push({ kind: "attachment", path: path6, sizeBytes });
       continue;
     }
     if (storageKind === null) {
-      skippedItems.push({ kind: "attachment", path: path5, sizeBytes });
+      skippedItems.push({ kind: "attachment", path: path6, sizeBytes });
       continue;
     }
     nextAttachments.push(row);
@@ -30413,11 +30413,11 @@ async function safeWriteAuditEvent(env, event) {
 
 // src/utils/direct-upload.ts
 var MULTIPART_FORMDATA_OVERHEAD_BYTES = 256 * 1024;
-function buildDirectUploadUrl(request, path5, token) {
+function buildDirectUploadUrl(request, path6, token) {
   const version = "2023-11-03";
   const expiresAt = "2099-12-31T23:59:59Z";
   const origin = new URL(request.url).origin;
-  return `${origin}${path5}?sv=${encodeURIComponent(version)}&se=${encodeURIComponent(expiresAt)}&token=${encodeURIComponent(token)}`;
+  return `${origin}${path6}?sv=${encodeURIComponent(version)}&se=${encodeURIComponent(expiresAt)}&token=${encodeURIComponent(token)}`;
 }
 function getSafeJwtSecret(env) {
   const secret = (env.JWT_SECRET || "").trim();
@@ -31040,8 +31040,8 @@ async function downloadRemoteAttachmentBatchViaDurableObject(env, destination, b
   const manifest = JSON.parse(new TextDecoder().decode(manifestBytes));
   for (const entry of manifest.entries || []) {
     const blobName = String(entry.blobName || "").trim();
-    const path5 = String(entry.path || "").trim();
-    const bytes = path5 ? files[path5] : null;
+    const path6 = String(entry.path || "").trim();
+    const bytes = path6 ? files[path6] : null;
     if (blobName && bytes) {
       result.set(blobName, bytes);
     }
@@ -31363,9 +31363,9 @@ async function handleDownloadAdminRemoteBackup(request, env, actorUser) {
   const storage = new StorageService(env.DB);
   try {
     const settings = await loadBackupSettings(storage, env, "UTC");
-    const path5 = ensureRemoteRestoreCandidate(String(body.path || ""));
+    const path6 = ensureRemoteRestoreCandidate(String(body.path || ""));
     const destination = requireBackupDestination(settings, body.destinationId || null);
-    const remoteFile = await downloadRemoteBackupFile(destination, path5);
+    const remoteFile = await downloadRemoteBackupFile(destination, path6);
     return new Response(remoteFile.bytes, {
       status: 200,
       headers: {
@@ -31392,15 +31392,15 @@ async function handleInspectAdminRemoteBackup(request, env, actorUser) {
   const storage = new StorageService(env.DB);
   try {
     const settings = await loadBackupSettings(storage, env, "UTC");
-    const path5 = ensureRemoteRestoreCandidate(String(body.path || ""));
+    const path6 = ensureRemoteRestoreCandidate(String(body.path || ""));
     const destination = requireBackupDestination(settings, body.destinationId || null);
-    const remoteFile = await downloadRemoteBackupFile(destination, path5);
-    const integrity = await inspectBackupArchiveFileNameChecksum(remoteFile.bytes, remoteFile.fileName || path5);
+    const remoteFile = await downloadRemoteBackupFile(destination, path6);
+    const integrity = await inspectBackupArchiveFileNameChecksum(remoteFile.bytes, remoteFile.fileName || path6);
     return jsonResponse({
       object: "backup-remote-integrity",
       destinationId: destination.id,
-      path: path5,
-      fileName: remoteFile.fileName || path5.split("/").pop() || path5,
+      path: path6,
+      fileName: remoteFile.fileName || path6.split("/").pop() || path6,
       integrity
     });
   } catch (error) {
@@ -31420,14 +31420,14 @@ async function handleDeleteAdminRemoteBackup(request, env, actorUser) {
   const storage = new StorageService(env.DB);
   try {
     const settings = await loadBackupSettings(storage, env, "UTC");
-    const path5 = ensureRemoteRestoreCandidate(String(body.path || ""));
+    const path6 = ensureRemoteRestoreCandidate(String(body.path || ""));
     const destination = requireBackupDestination(settings, body.destinationId || null);
-    await deleteRemoteBackupFile(destination, path5);
+    await deleteRemoteBackupFile(destination, path6);
     await writeAuditLog(storage, actorUser.id, "admin.backup.remote.delete", "backup", null, {
       ...getBackupDestinationSummary(destination),
-      remotePath: path5
+      remotePath: path6
     }, request);
-    return jsonResponse({ object: "backup-remote-delete", deleted: true, path: path5 });
+    return jsonResponse({ object: "backup-remote-delete", deleted: true, path: path6 });
   } catch (error) {
     return errorResponse(error instanceof Error ? error.message : "Remote backup delete failed", 409);
   }
@@ -31443,14 +31443,14 @@ async function handleRestoreAdminRemoteBackup(request, env, actorUser) {
   const verificationError = await requireBackupUserVerification(actorUser, String(body.masterPasswordHash || ""), env);
   if (verificationError) return verificationError;
   try {
-    const path5 = ensureRemoteRestoreCandidate(String(body.path || ""));
+    const path6 = ensureRemoteRestoreCandidate(String(body.path || ""));
     const targetDeviceIdentifier = String(request.headers.get("X-NodeWarden-Acting-Device-Id") || "").trim() || null;
     const imported = await restoreRemoteBackupInDurableObject(env, {
       actorUserId: actorUser.id,
       allowChecksumMismatch: !!body.allowChecksumMismatch,
       auditMetadata: auditRequestMetadata(request),
       destinationId: body.destinationId || null,
-      path: path5,
+      path: path6,
       replaceExisting: !!body.replaceExisting,
       targetDeviceIdentifier
     });
@@ -31818,8 +31818,8 @@ var BackupTransferRunner = class {
       const storage = new StorageService(this.env.DB);
       const settings = await loadBackupSettings(storage, this.env, "UTC");
       const destination = requireBackupDestination(settings, body.destinationId || null);
-      const path5 = ensureRemoteRestoreCandidate(String(body.path || ""));
-      const restoreFileNameFromPath = path5.split("/").pop() || path5;
+      const path6 = ensureRemoteRestoreCandidate(String(body.path || ""));
+      const restoreFileNameFromPath = path6.split("/").pop() || path6;
       const targetDeviceIdentifier = String(body.targetDeviceIdentifier || "").trim() || null;
       const replaceExisting = !!body.replaceExisting;
       await notifyUserBackupRestoreProgress(
@@ -31836,8 +31836,8 @@ var BackupTransferRunner = class {
         },
         targetDeviceIdentifier
       );
-      const remoteFile = await downloadRemoteBackupFile(destination, path5);
-      const checksumOk = await verifyBackupArchiveFileNameChecksum(remoteFile.bytes, remoteFile.fileName || path5);
+      const remoteFile = await downloadRemoteBackupFile(destination, path6);
+      const checksumOk = await verifyBackupArchiveFileNameChecksum(remoteFile.bytes, remoteFile.fileName || path6);
       if (!checksumOk && !body.allowChecksumMismatch) {
         return badRequest("Remote backup file checksum does not match its filename");
       }
@@ -31847,7 +31847,7 @@ var BackupTransferRunner = class {
         actorUserId,
         remoteFile,
         destination,
-        path5,
+        path6,
         replaceExisting,
         !checksumOk,
         body.auditMetadata || null,
@@ -31924,9 +31924,9 @@ var BackupTransferRunner = class {
         const blobName = blobNames[i2];
         const file = await downloadRemoteBackupFile(body2.destination, `attachments/${blobName}`).catch(() => null);
         if (!file) continue;
-        const path5 = `files/${i2}.bin`;
-        entries.push({ blobName, path: path5 });
-        files[path5] = file.bytes;
+        const path6 = `files/${i2}.bin`;
+        entries.push({ blobName, path: path6 });
+        files[path6] = file.bytes;
       }
       files["manifest.json"] = encoder.encode(JSON.stringify({ version: 1, entries }));
       return new Response(zipSync(files), {
@@ -32629,17 +32629,17 @@ function readBodyString(body, names) {
   }
   return "";
 }
-function readNestedString(source, path5) {
+function readNestedString(source, path6) {
   let current = source;
-  for (const key of path5) {
+  for (const key of path6) {
     if (!current || typeof current !== "object") return "";
     current = current[key];
   }
   return typeof current === "string" ? current : "";
 }
-function readNestedNumber(source, path5) {
+function readNestedNumber(source, path6) {
   let current = source;
-  for (const key of path5) {
+  for (const key of path6) {
     if (!current || typeof current !== "object") return void 0;
     current = current[key];
   }
@@ -33936,12 +33936,12 @@ async function processAttachmentUpload(request, env, cipher, attachment, cipherI
   if (upload instanceof Response) {
     return upload;
   }
-  const path5 = getAttachmentObjectKey(cipherId, attachment.id);
-  if (await getBlobObject(env, path5)) {
+  const path6 = getAttachmentObjectKey(cipherId, attachment.id);
+  if (await getBlobObject(env, path6)) {
     return errorResponse("Attachment file has already been uploaded", 409);
   }
   try {
-    await putBlobObject(env, path5, upload.body, {
+    await putBlobObject(env, path6, upload.body, {
       size: upload.size,
       contentType: upload.contentType,
       customMetadata: {
@@ -34141,12 +34141,12 @@ async function handlePublicDownloadAttachment(request, env, cipherId, attachment
   if (!attachment || attachment.cipherId !== cipherId) {
     return errorResponse("Attachment not found", 404);
   }
-  const path5 = getAttachmentObjectKey(cipherId, attachmentId);
+  const path6 = getAttachmentObjectKey(cipherId, attachmentId);
   const firstUse = await storage.consumeAttachmentDownloadToken(claims.jti, claims.exp);
   if (!firstUse) {
     return errorResponse("Invalid or expired token", 401);
   }
-  const object = await getBlobObject(env, path5);
+  const object = await getBlobObject(env, path6);
   if (!object) {
     return errorResponse("Attachment file not found", 404);
   }
@@ -34170,8 +34170,8 @@ async function handleDeleteAttachment(request, env, userId, cipherId, attachment
   if (!attachment || attachment.cipherId !== cipherId) {
     return errorResponse("Attachment not found", 404);
   }
-  const path5 = getAttachmentObjectKey(cipherId, attachmentId);
-  await deleteBlobObject(env, path5);
+  const path6 = getAttachmentObjectKey(cipherId, attachmentId);
+  await deleteBlobObject(env, path6);
   await storage.deleteAttachmentForUser(attachmentId, userId);
   const revisionInfo = await storage.updateCipherRevisionDate(cipherId);
   if (revisionInfo) {
@@ -34204,8 +34204,8 @@ async function deleteAllAttachmentsForCiphers(env, cipherIds) {
   );
   if (!attachments.length) return;
   await runWithConcurrency(attachments, LIMITS.performance.attachmentDeleteConcurrency, async ({ attachment, cipherId }) => {
-    const path5 = getAttachmentObjectKey(cipherId, attachment.id);
-    await deleteBlobObject(env, path5);
+    const path6 = getAttachmentObjectKey(cipherId, attachment.id);
+    await deleteBlobObject(env, path6);
   });
   await storage.bulkDeleteAttachmentsByIds(attachments.map(({ attachment }) => attachment.id));
 }
@@ -36008,12 +36008,12 @@ async function processSendFileUpload(request, env, send, fileId) {
   if (upload instanceof Response) {
     return upload;
   }
-  const path5 = getSendFileObjectKey(send.id, fileId);
-  if (await getBlobObject(env, path5)) {
+  const path6 = getSendFileObjectKey(send.id, fileId);
+  if (await getBlobObject(env, path6)) {
     return errorResponse("Send file has already been uploaded", 409);
   }
   try {
-    await putBlobObject(env, path5, upload.body, {
+    await putBlobObject(env, path6, upload.body, {
       size: upload.size,
       contentType: upload.contentType,
       customMetadata: {
@@ -38001,32 +38001,32 @@ async function handleClearDeviceToken(request, env, userId, deviceIdentifier) {
 function devicesPath(pattern) {
   return new RegExp(`^/(?:api/)?devices${pattern}$`, "i");
 }
-async function handleAuthenticatedDeviceRoute(request, env, userId, path5, method) {
-  if (path5 === "/api/devices" || path5 === "/devices") {
+async function handleAuthenticatedDeviceRoute(request, env, userId, path6, method) {
+  if (path6 === "/api/devices" || path6 === "/devices") {
     if (method === "GET") return handleGetDevices(request, env, userId);
     if (method === "POST") return handleRegisterDevice(request, env, userId);
     if (method === "DELETE") return handleDeleteAllDevices(request, env, userId);
     return null;
   }
-  if ((path5 === "/api/devices/lost-trust" || path5 === "/devices/lost-trust") && method === "POST") {
+  if ((path6 === "/api/devices/lost-trust" || path6 === "/devices/lost-trust") && method === "POST") {
     return handleReportLostTrust(request, env, userId);
   }
-  if (path5 === "/api/devices/authorized" || path5 === "/devices/authorized") {
+  if (path6 === "/api/devices/authorized" || path6 === "/devices/authorized") {
     if (method === "GET") return handleGetAuthorizedDevices(request, env, userId);
     if (method === "DELETE") return handleRevokeAllTrustedDevices(request, env, userId);
     return null;
   }
-  const authorizedDeviceMatch = path5.match(devicesPath("/authorized/([^/]+)"));
+  const authorizedDeviceMatch = path6.match(devicesPath("/authorized/([^/]+)"));
   if (authorizedDeviceMatch && method === "DELETE") {
     const deviceIdentifier = decodeURIComponent(authorizedDeviceMatch[1]);
     return handleRevokeTrustedDevice(request, env, userId, deviceIdentifier);
   }
-  const permanentAuthorizedDeviceMatch = path5.match(devicesPath("/authorized/([^/]+)/permanent"));
+  const permanentAuthorizedDeviceMatch = path6.match(devicesPath("/authorized/([^/]+)/permanent"));
   if (permanentAuthorizedDeviceMatch && method === "POST") {
     const deviceIdentifier = decodeURIComponent(permanentAuthorizedDeviceMatch[1]);
     return handleTrustDevicePermanently(request, env, userId, deviceIdentifier);
   }
-  const deleteDeviceMatch = path5.match(devicesPath("/([^/]+)"));
+  const deleteDeviceMatch = path6.match(devicesPath("/([^/]+)"));
   if (deleteDeviceMatch && method === "GET") {
     const deviceIdentifier = decodeURIComponent(deleteDeviceMatch[1]);
     return handleGetDevice(request, env, userId, deviceIdentifier);
@@ -38035,50 +38035,50 @@ async function handleAuthenticatedDeviceRoute(request, env, userId, path5, metho
     const deviceIdentifier = decodeURIComponent(deleteDeviceMatch[1]);
     return handleDeleteDevice(request, env, userId, deviceIdentifier);
   }
-  const updateDeviceNameMatch = path5.match(devicesPath("/([^/]+)/name"));
+  const updateDeviceNameMatch = path6.match(devicesPath("/([^/]+)/name"));
   if (updateDeviceNameMatch && method === "PUT") {
     const deviceIdentifier = decodeURIComponent(updateDeviceNameMatch[1]);
     return handleUpdateDeviceName(request, env, userId, deviceIdentifier);
   }
-  const identifierMatch = path5.match(devicesPath("/identifier/([^/]+)"));
+  const identifierMatch = path6.match(devicesPath("/identifier/([^/]+)"));
   if (identifierMatch && method === "GET") {
     const deviceIdentifier = decodeURIComponent(identifierMatch[1]);
     return handleGetDeviceByIdentifier(request, env, userId, deviceIdentifier);
   }
-  const deviceKeysMatch = path5.match(devicesPath("/([^/]+)/keys")) || path5.match(devicesPath("/identifier/([^/]+)/keys"));
+  const deviceKeysMatch = path6.match(devicesPath("/([^/]+)/keys")) || path6.match(devicesPath("/identifier/([^/]+)/keys"));
   if (deviceKeysMatch && (method === "PUT" || method === "POST")) {
     const deviceIdentifier = decodeURIComponent(deviceKeysMatch[1]);
     return handleUpdateDeviceKeys(request, env, userId, deviceIdentifier);
   }
-  const identifierTokenMatch = path5.match(devicesPath("/identifier/([^/]+)/token"));
+  const identifierTokenMatch = path6.match(devicesPath("/identifier/([^/]+)/token"));
   if (identifierTokenMatch && (method === "PUT" || method === "POST")) {
     const deviceIdentifier = decodeURIComponent(identifierTokenMatch[1]);
     return handleUpdateDeviceToken(request, env, userId, deviceIdentifier);
   }
-  const identifierWebPushMatch = path5.match(devicesPath("/identifier/([^/]+)/web-push-auth"));
+  const identifierWebPushMatch = path6.match(devicesPath("/identifier/([^/]+)/web-push-auth"));
   if (identifierWebPushMatch && (method === "PUT" || method === "POST")) {
     const deviceIdentifier = decodeURIComponent(identifierWebPushMatch[1]);
     return handleUpdateDeviceWebPushAuth(request, env, userId, deviceIdentifier);
   }
-  const identifierClearTokenMatch = path5.match(devicesPath("/identifier/([^/]+)/clear-token"));
+  const identifierClearTokenMatch = path6.match(devicesPath("/identifier/([^/]+)/clear-token"));
   if (identifierClearTokenMatch && (method === "PUT" || method === "POST")) {
     const deviceIdentifier = decodeURIComponent(identifierClearTokenMatch[1]);
     return handleClearDeviceToken(request, env, userId, deviceIdentifier);
   }
-  const identifierRetrieveKeysMatch = path5.match(devicesPath("/([^/]+)/retrieve-keys"));
+  const identifierRetrieveKeysMatch = path6.match(devicesPath("/([^/]+)/retrieve-keys"));
   if (identifierRetrieveKeysMatch && method === "POST") {
     const deviceIdentifier = decodeURIComponent(identifierRetrieveKeysMatch[1]);
     return handleRetrieveDeviceKeys(request, env, userId, deviceIdentifier);
   }
-  const identifierDeactivateMatch = path5.match(devicesPath("/([^/]+)/deactivate"));
+  const identifierDeactivateMatch = path6.match(devicesPath("/([^/]+)/deactivate"));
   if (identifierDeactivateMatch && (method === "POST" || method === "DELETE")) {
     const deviceIdentifier = decodeURIComponent(identifierDeactivateMatch[1]);
     return handleDeactivateDevice(request, env, userId, deviceIdentifier);
   }
-  if ((path5 === "/api/devices/update-trust" || path5 === "/devices/update-trust") && method === "POST") {
+  if ((path6 === "/api/devices/update-trust" || path6 === "/devices/update-trust") && method === "POST") {
     return handleUpdateDeviceTrust(request, env, userId);
   }
-  if ((path5 === "/api/devices/untrust" || path5 === "/devices/untrust") && method === "POST") {
+  if ((path6 === "/api/devices/untrust" || path6 === "/devices/untrust") && method === "POST") {
     return handleUntrustDevices(request, env, userId);
   }
   return null;
@@ -38407,42 +38407,42 @@ async function handleAdminDeleteUser(request, env, actorUser, targetUserId) {
 }
 
 // src/router-admin-backup.ts
-async function handleAdminBackupRoute(request, env, actorUser, path5, method) {
-  if (path5 === "/api/admin/backup/export" && method === "POST") {
+async function handleAdminBackupRoute(request, env, actorUser, path6, method) {
+  if (path6 === "/api/admin/backup/export" && method === "POST") {
     return handleAdminExportBackup(request, env, actorUser);
   }
-  if (path5 === "/api/admin/backup/blob" && (method === "GET" || method === "POST")) {
+  if (path6 === "/api/admin/backup/blob" && (method === "GET" || method === "POST")) {
     return handleDownloadAdminBackupAttachment(request, env, actorUser);
   }
-  if (path5 === "/api/admin/backup/settings") {
+  if (path6 === "/api/admin/backup/settings") {
     if (method === "GET") return handleGetAdminBackupSettings(request, env, actorUser);
     if (method === "PUT") return handleUpdateAdminBackupSettings(request, env, actorUser);
     return null;
   }
-  if (path5 === "/api/admin/backup/settings/repair") {
+  if (path6 === "/api/admin/backup/settings/repair") {
     if (method === "GET") return handleGetAdminBackupSettingsRepairState(request, env, actorUser);
     if (method === "POST") return handleRepairAdminBackupSettings(request, env, actorUser);
     return null;
   }
-  if (path5 === "/api/admin/backup/run" && method === "POST") {
+  if (path6 === "/api/admin/backup/run" && method === "POST") {
     return handleRunAdminConfiguredBackup(request, env, actorUser);
   }
-  if (path5 === "/api/admin/backup/remote" && method === "GET") {
+  if (path6 === "/api/admin/backup/remote" && method === "GET") {
     return handleListAdminRemoteBackups(request, env, actorUser);
   }
-  if (path5 === "/api/admin/backup/remote/download" && method === "POST") {
+  if (path6 === "/api/admin/backup/remote/download" && method === "POST") {
     return handleDownloadAdminRemoteBackup(request, env, actorUser);
   }
-  if (path5 === "/api/admin/backup/remote/integrity" && method === "POST") {
+  if (path6 === "/api/admin/backup/remote/integrity" && method === "POST") {
     return handleInspectAdminRemoteBackup(request, env, actorUser);
   }
-  if (path5 === "/api/admin/backup/remote/file" && method === "DELETE") {
+  if (path6 === "/api/admin/backup/remote/file" && method === "DELETE") {
     return handleDeleteAdminRemoteBackup(request, env, actorUser);
   }
-  if (path5 === "/api/admin/backup/remote/restore" && method === "POST") {
+  if (path6 === "/api/admin/backup/remote/restore" && method === "POST") {
     return handleRestoreAdminRemoteBackup(request, env, actorUser);
   }
-  if (path5 === "/api/admin/backup/import" && method === "POST") {
+  if (path6 === "/api/admin/backup/import" && method === "POST") {
     return handleAdminImportBackup(request, env, actorUser);
   }
   return null;
@@ -39147,14 +39147,14 @@ async function handleAcknowledgeSyncConflict(_request, env, actorUser, conflictI
 }
 
 // src/router-admin-remote-sync.ts
-async function handleAdminRemoteSyncRoute(request, env, actorUser, path5, method) {
-  if (path5 === "/api/admin/remote-sync" && method === "GET") {
+async function handleAdminRemoteSyncRoute(request, env, actorUser, path6, method) {
+  if (path6 === "/api/admin/remote-sync" && method === "GET") {
     return handleListRemoteSyncSources(request, env, actorUser);
   }
-  if (path5 === "/api/admin/remote-sync" && method === "POST") {
+  if (path6 === "/api/admin/remote-sync" && method === "POST") {
     return handleCreateRemoteSyncSource(request, env, actorUser);
   }
-  const conflictsMatch = path5.match(/^\/api\/admin\/remote-sync\/conflicts(\/([a-f0-9-]+)\/ack)?$/i);
+  const conflictsMatch = path6.match(/^\/api\/admin\/remote-sync\/conflicts(\/([a-f0-9-]+)\/ack)?$/i);
   if (conflictsMatch) {
     const conflictId = conflictsMatch[2];
     if (!conflictId && method === "GET") {
@@ -39165,7 +39165,7 @@ async function handleAdminRemoteSyncRoute(request, env, actorUser, path5, method
     }
     return null;
   }
-  const itemMatch = path5.match(/^\/api\/admin\/remote-sync\/([a-f0-9-]+)(?:\/(trigger))?$/i);
+  const itemMatch = path6.match(/^\/api\/admin\/remote-sync\/([a-f0-9-]+)(?:\/(trigger))?$/i);
   if (itemMatch) {
     const sourceId = itemMatch[1];
     const subAction = itemMatch[2];
@@ -39183,54 +39183,278 @@ async function handleAdminRemoteSyncRoute(request, env, actorUser, path5, method
   return null;
 }
 
+// src/services/update-checker.ts
+var import_node_fs = require("node:fs");
+var import_node_os = require("node:os");
+var import_node_child_process = require("node:child_process");
+var import_node_path = __toESM(require("node:path"), 1);
+var APP_VERSION2 = true ? "v1.8.0-local" : "v1.8.0-local";
+var REPO = "guimoyun/nodewarden-WL";
+var GH_TOKEN = process.env.NODEWARDEN_UPDATE_TOKEN || "";
+var API_HEADERS = {
+  "User-Agent": "NodeWarden-Local-Updater",
+  Accept: "application/vnd.github+json",
+  ...GH_TOKEN ? { Authorization: `Bearer ${GH_TOKEN}` } : {}
+};
+var MIRROR = process.env.NODEWARDEN_UPDATE_MIRROR || "";
+function currentVersion() {
+  return APP_VERSION2;
+}
+function platformAssetName() {
+  const p = process.platform;
+  const a = process.arch;
+  if (p === "linux" && a === "x64") return "nodewarden-linux-x64.zip";
+  if (p === "linux" && a === "arm64") return "nodewarden-linux-arm64.zip";
+  if (p === "linux" && a === "arm") {
+    return "nodewarden-linux-armv7l.zip";
+  }
+  if (p === "win32" && a === "x64") return "nodewarden-win-x64.zip";
+  if (p === "win32" && a === "arm64") return "nodewarden-win-arm64.zip";
+  if (p === "win32" && a === "ia32") return "nodewarden-win-x86.zip";
+  if (p === "darwin" && a === "x64") return "nodewarden-macos-x64.zip";
+  if (p === "darwin" && a === "arm64") return "nodewarden-macos-arm64.zip";
+  return null;
+}
+function compareVersions(a, b) {
+  const parse2 = (v) => String(v || "").replace(/^v/i, "").split(".").map((part) => parseInt(part.replace(/\D.*$/, ""), 10) || 0);
+  const pa = parse2(a);
+  const pb = parse2(b);
+  for (let i2 = 0; i2 < Math.max(pa.length, pb.length); i2 += 1) {
+    const x2 = pa[i2] ?? 0;
+    const y = pb[i2] ?? 0;
+    if (x2 > y) return 1;
+    if (x2 < y) return -1;
+  }
+  return 0;
+}
+async function checkForUpdates() {
+  const platform = platformAssetName();
+  const base = {
+    ok: false,
+    currentVersion: APP_VERSION2,
+    latestVersion: null,
+    hasUpdate: false,
+    assetUrl: null,
+    assetName: null,
+    assetSize: null,
+    publishedAt: null,
+    releaseNotes: null,
+    platform: String(platform || `${process.platform}-${process.arch}`),
+    error: null
+  };
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: API_HEADERS });
+    if (!resp.ok) {
+      const detail = resp.status === 403 || resp.status === 429 ? "GitHub API \u9650\u6D41\uFF08\u672A\u8BA4\u8BC1 60 \u6B21/\u5C0F\u65F6/IP\uFF09\u3002\u53EF\u8BBE\u7F6E NODEWARDEN_UPDATE_TOKEN \u73AF\u5883\u53D8\u91CF\u63D0\u4F9B GitHub Token \u63D0\u5347\u9650\u989D\u3002" : `HTTP ${resp.status}`;
+      return { ...base, error: `\u65E0\u6CD5\u8FDE\u63A5 GitHub Releases\uFF08${detail}\uFF09\u3002\u8BF7\u68C0\u67E5\u670D\u52A1\u5668\u80FD\u5426\u8BBF\u95EE api.github.com` };
+    }
+    const release = await resp.json();
+    const latestVersion = String(release.tag_name || "");
+    const assets = release.assets ?? [];
+    let asset;
+    if (platform) {
+      asset = assets.find((a) => a.name === platform) ?? assets.find((a) => a.name?.endsWith(".zip"));
+    } else {
+      asset = assets[0];
+    }
+    return {
+      ...base,
+      ok: true,
+      latestVersion,
+      hasUpdate: compareVersions(latestVersion, APP_VERSION2) > 0,
+      assetUrl: asset?.browser_download_url ? withMirror(asset.browser_download_url) : null,
+      assetName: asset?.name ?? null,
+      assetSize: asset?.size ?? null,
+      publishedAt: release.published_at ?? null,
+      releaseNotes: (release.body ?? "").slice(0, 4e3) || null
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return { ...base, error: `\u68C0\u67E5\u66F4\u65B0\u5931\u8D25\uFF1A${msg}` };
+  }
+}
+function withMirror(url) {
+  if (!MIRROR) return url;
+  return `${MIRROR.replace(/\/$/, "")}/${url}`;
+}
+function unzipTo(zipPath, destDir) {
+  if (process.platform === "win32") {
+    (0, import_node_child_process.execFileSync)("powershell.exe", [
+      "-NoProfile",
+      "-Command",
+      `Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${destDir}'`
+    ]);
+    return;
+  }
+  try {
+    (0, import_node_child_process.execFileSync)("unzip", ["-o", "-q", zipPath, "-d", destDir]);
+  } catch {
+    (0, import_node_child_process.execFileSync)("busybox", ["unzip", "-o", "-q", zipPath, "-d", destDir]);
+  }
+}
+function runDetached(command, args) {
+  const child = (0, import_node_child_process.spawn)(command, args, { detached: true, stdio: "ignore" });
+  child.unref();
+}
+function exeNameOf(assetName) {
+  if (assetName.startsWith("nodewarden-win-")) {
+    return assetName.replace(/\.zip$/i, ".exe");
+  }
+  return assetName.replace(/\.zip$/i, "");
+}
+async function applyUpdate(update) {
+  if (!update.assetUrl || !update.assetName) {
+    return { ok: false, message: "\u6CA1\u6709\u53EF\u7528\u7684\u66F4\u65B0\u5305\uFF08\u8D44\u4EA7\u7F3A\u5931\uFF09" };
+  }
+  const stageDir = (0, import_node_fs.mkdtempSync)(import_node_path.default.join((0, import_node_os.tmpdir)(), "nw-update-"));
+  try {
+    const zipPath = import_node_path.default.join(stageDir, update.assetName);
+    const resp = await fetch(update.assetUrl, { headers: API_HEADERS });
+    if (!resp.ok || !resp.body) {
+      return { ok: false, message: `\u4E0B\u8F7D\u66F4\u65B0\u5305\u5931\u8D25\uFF08HTTP ${resp.status}\uFF09` };
+    }
+    const bytes = Buffer.from(await resp.arrayBuffer());
+    (0, import_node_fs.writeFileSync)(zipPath, bytes);
+    const extractDir = import_node_path.default.join(stageDir, "pkg");
+    unzipTo(zipPath, extractDir);
+    const exeName = exeNameOf(update.assetName);
+    const newExe = import_node_path.default.join(extractDir, exeName);
+    if (!(0, import_node_fs.existsSync)(newExe)) {
+      return { ok: false, message: `\u66F4\u65B0\u5305\u4E2D\u672A\u627E\u5230\u53EF\u6267\u884C\u6587\u4EF6 ${exeName}` };
+    }
+    const curExe = process.execPath;
+    const distDir = process.env.NODEWARDEN_DIST_DIR ? import_node_path.default.resolve(process.env.NODEWARDEN_DIST_DIR) : import_node_path.default.resolve(process.cwd(), "dist");
+    const newDist = import_node_path.default.join(extractDir, "dist");
+    if (process.platform === "win32") {
+      const bat = import_node_path.default.join(stageDir, "apply-update.bat");
+      const script2 = [
+        "@echo off",
+        "timeout /t 2 /nobreak >nul",
+        `taskkill /f /im ${exeName} >nul 2>&1`,
+        newDist && (0, import_node_fs.existsSync)(newDist) ? `if exist "${newDist}\\*" xcopy /y /e /i "${newDist}\\*" "${distDir}\\" >nul 2>&1` : "rem no dist in package",
+        `copy /y "${newExe}" "${curExe}" >nul`,
+        `del /q "${newExe}" >nul 2>&1`,
+        `start "" "${curExe}"`,
+        'del "%~f0"'
+      ].join("\r\n");
+      (0, import_node_fs.writeFileSync)(bat, script2);
+      runDetached("cmd.exe", ["/c", bat]);
+      return { ok: true, message: `\u66F4\u65B0\u5305\u5DF2\u4E0B\u8F7D\u5E76\u51C6\u5907\u5C31\u7EEA\uFF0C\u7A0B\u5E8F\u5C06\u5728\u6570\u79D2\u540E\u81EA\u52A8\u66FF\u6362\u5E76\u91CD\u542F\uFF08Windows\uFF09` };
+    }
+    const sh = import_node_path.default.join(stageDir, "apply-update.sh");
+    const script = [
+      "#!/bin/sh",
+      "sleep 2",
+      `cp "${newExe}" "${curExe}.new"`,
+      `chmod +x "${curExe}.new"`,
+      newDist && (0, import_node_fs.existsSync)(newDist) ? `cp -r "${newDist}/." "${distDir}/"` : "true",
+      `mv "${curExe}.new" "${curExe}"`,
+      "if command -v systemctl >/dev/null 2>&1 && systemctl is-active nodewarden.service >/dev/null 2>&1; then",
+      "  systemctl restart nodewarden.service",
+      "else",
+      `  nohup "${curExe}" >/dev/null 2>&1 &`,
+      "fi",
+      `rm -rf "${stageDir}"`,
+      'rm -f "$0"'
+    ].join("\n");
+    (0, import_node_fs.writeFileSync)(sh, script);
+    runDetached("/bin/sh", [sh]);
+    return { ok: true, message: `\u66F4\u65B0\u5305\u5DF2\u4E0B\u8F7D\u5E76\u51C6\u5907\u5C31\u7EEA\uFF0C\u7A0B\u5E8F\u5C06\u5728\u6570\u79D2\u540E\u81EA\u52A8\u66FF\u6362\u5E76\u91CD\u542F\uFF08${process.platform === "darwin" ? "macOS\uFF0C\u5982\u9047\u201C\u65E0\u6CD5\u9A8C\u8BC1\u5F00\u53D1\u8005\u201D\u8BF7\u53F3\u952E\u2192\u6253\u5F00" : "Linux"}\uFF09` };
+  } catch (error) {
+    (0, import_node_fs.rmSync)(stageDir, { recursive: true, force: true });
+    const msg = error instanceof Error ? error.message : String(error);
+    return { ok: false, message: `\u5E94\u7528\u66F4\u65B0\u5931\u8D25\uFF1A${msg}` };
+  }
+}
+
+// src/handlers/update-admin.ts
+async function handleUpdateCheck() {
+  const result = await checkForUpdates();
+  if (!result.ok) {
+    return errorResponse(result.error || "\u68C0\u67E5\u66F4\u65B0\u5931\u8D25", 502);
+  }
+  return jsonResponse({ object: "update-check", ...result });
+}
+async function handleUpdateApply() {
+  const check = await checkForUpdates();
+  if (!check.ok) {
+    return errorResponse(check.error || "\u68C0\u67E5\u66F4\u65B0\u5931\u8D25", 502);
+  }
+  if (!check.hasUpdate) {
+    return jsonResponse({ object: "update-apply", ok: true, message: "\u5F53\u524D\u5DF2\u662F\u6700\u65B0\u7248\u672C\uFF0C\u65E0\u9700\u66F4\u65B0", applied: false });
+  }
+  const outcome = await applyUpdate(check);
+  return jsonResponse({
+    object: "update-apply",
+    ok: outcome.ok,
+    applied: outcome.ok,
+    message: outcome.message,
+    fromVersion: currentVersion(),
+    toVersion: check.latestVersion
+  }, outcome.ok ? 200 : 500);
+}
+async function handleAdminUpdateRoute(request, _env, actorUser) {
+  const url = new URL(request.url);
+  const path6 = url.pathname;
+  if (path6 === "/api/admin/update/check" && request.method === "GET") {
+    return handleUpdateCheck();
+  }
+  if (path6 === "/api/admin/update/apply" && request.method === "POST") {
+    return handleUpdateApply();
+  }
+  return null;
+}
+
 // src/router-admin.ts
-function isKnownAdminPath(path5) {
-  return path5 === "/api/admin/users" || path5 === "/api/admin/logs" || path5 === "/api/admin/logs/settings" || path5 === "/api/admin/invites" || path5.startsWith("/api/admin/backup") || path5.startsWith("/api/admin/remote-sync") || /^\/api\/admin\/invites\/[^/]+$/i.test(path5) || /^\/api\/admin\/users\/[a-f0-9-]+(?:\/status)?$/i.test(path5);
+function isKnownAdminPath(path6) {
+  return path6 === "/api/admin/users" || path6 === "/api/admin/logs" || path6 === "/api/admin/logs/settings" || path6 === "/api/admin/invites" || path6.startsWith("/api/admin/backup") || path6.startsWith("/api/admin/remote-sync") || path6.startsWith("/api/admin/update") || /^\/api\/admin\/invites\/[^/]+$/i.test(path6) || /^\/api\/admin\/users\/[a-f0-9-]+(?:\/status)?$/i.test(path6);
 }
 function isActiveAdmin(user) {
   return user.role === "admin" && user.status === "active";
 }
-async function handleAdminRoute(request, env, actorUser, path5, method) {
-  if (!isKnownAdminPath(path5)) {
+async function handleAdminRoute(request, env, actorUser, path6, method) {
+  if (!isKnownAdminPath(path6)) {
     return null;
   }
   if (!isActiveAdmin(actorUser)) {
     return errorResponse("Forbidden", 403);
   }
-  if (path5 === "/api/admin/users" && method === "GET") {
+  if (path6 === "/api/admin/users" && method === "GET") {
     return handleAdminListUsers(request, env, actorUser);
   }
-  if (path5 === "/api/admin/logs" && method === "GET") {
+  if (path6 === "/api/admin/logs" && method === "GET") {
     return handleAdminListAuditLogs(request, env, actorUser);
   }
-  if (path5 === "/api/admin/logs" && method === "DELETE") {
+  if (path6 === "/api/admin/logs" && method === "DELETE") {
     return handleAdminClearAuditLogs(request, env, actorUser);
   }
-  if (path5 === "/api/admin/logs/settings") {
+  if (path6 === "/api/admin/logs/settings") {
     if (method === "GET") return handleAdminGetAuditLogSettings(request, env, actorUser);
     if (method === "PUT" || method === "POST") return handleAdminUpdateAuditLogSettings(request, env, actorUser);
     return null;
   }
-  const adminBackupResponse = await handleAdminBackupRoute(request, env, actorUser, path5, method);
+  const adminBackupResponse = await handleAdminBackupRoute(request, env, actorUser, path6, method);
   if (adminBackupResponse) return adminBackupResponse;
-  const adminRemoteSyncResponse = await handleAdminRemoteSyncRoute(request, env, actorUser, path5, method);
+  const adminRemoteSyncResponse = await handleAdminRemoteSyncRoute(request, env, actorUser, path6, method);
   if (adminRemoteSyncResponse) return adminRemoteSyncResponse;
-  if (path5 === "/api/admin/invites") {
+  const adminUpdateResponse = await handleAdminUpdateRoute(request, env, actorUser);
+  if (adminUpdateResponse) return adminUpdateResponse;
+  if (path6 === "/api/admin/invites") {
     if (method === "GET") return handleAdminListInvites(request, env, actorUser);
     if (method === "POST") return handleAdminCreateInvite(request, env, actorUser);
     if (method === "DELETE") return handleAdminDeleteAllInvites(request, env, actorUser);
     return null;
   }
-  const adminInviteMatch = path5.match(/^\/api\/admin\/invites\/([^/]+)$/i);
+  const adminInviteMatch = path6.match(/^\/api\/admin\/invites\/([^/]+)$/i);
   if (adminInviteMatch && method === "DELETE") {
     const inviteCode = decodeURIComponent(adminInviteMatch[1]);
     return handleAdminDeleteInvite(request, env, actorUser, inviteCode);
   }
-  const adminUserStatusMatch = path5.match(/^\/api\/admin\/users\/([a-f0-9-]+)\/status$/i);
+  const adminUserStatusMatch = path6.match(/^\/api\/admin\/users\/([a-f0-9-]+)\/status$/i);
   if (adminUserStatusMatch && (method === "PUT" || method === "POST")) {
     return handleAdminSetUserStatus(request, env, actorUser, adminUserStatusMatch[1]);
   }
-  const adminUserDeleteMatch = path5.match(/^\/api\/admin\/users\/([a-f0-9-]+)$/i);
+  const adminUserDeleteMatch = path6.match(/^\/api\/admin\/users\/([a-f0-9-]+)$/i);
   if (adminUserDeleteMatch && method === "DELETE") {
     return handleAdminDeleteUser(request, env, actorUser, adminUserDeleteMatch[1]);
   }
@@ -47768,7 +47992,7 @@ async function handleUpdateAuthRequest(request, env, userId, id) {
 }
 
 // src/router-authenticated.ts
-async function handleAuthenticatedRoute(request, env, userId, currentUser, path5, method) {
+async function handleAuthenticatedRoute(request, env, userId, currentUser, path6, method) {
   if (method === "POST" || method === "PUT" || method === "DELETE") {
     const blockedAccountPaths = /* @__PURE__ */ new Set([
       "/api/accounts/set-password",
@@ -47776,11 +48000,11 @@ async function handleAuthenticatedRoute(request, env, userId, currentUser, path5
       "/api/accounts/delete-account",
       "/api/accounts/delete-vault"
     ]);
-    if (blockedAccountPaths.has(path5)) {
+    if (blockedAccountPaths.has(path6)) {
       return errorResponse("Not implemented", 501);
     }
   }
-  if ((path5 === "/api/accounts/kdf" || path5 === "/accounts/kdf") && (method === "POST" || method === "PUT")) {
+  if ((path6 === "/api/accounts/kdf" || path6 === "/accounts/kdf") && (method === "POST" || method === "PUT")) {
     return unsupportedResponse("KDF changes are not supported by this server.");
   }
   const mailBackedAccountPaths = /* @__PURE__ */ new Set([
@@ -47795,7 +48019,7 @@ async function handleAuthenticatedRoute(request, env, userId, currentUser, path5
     "/api/accounts/verify-otp",
     "/accounts/verify-otp"
   ]);
-  if (mailBackedAccountPaths.has(path5) && (method === "POST" || method === "PUT")) {
+  if (mailBackedAccountPaths.has(path6) && (method === "POST" || method === "PUT")) {
     return unsupportedResponse("Email delivery is not supported by this server.");
   }
   const emailTwoFactorPaths = /* @__PURE__ */ new Set([
@@ -47808,141 +48032,141 @@ async function handleAuthenticatedRoute(request, env, userId, currentUser, path5
     "/api/two-factor/email",
     "/two-factor/email"
   ]);
-  if (emailTwoFactorPaths.has(path5) && (method === "POST" || method === "PUT" || method === "DELETE")) {
+  if (emailTwoFactorPaths.has(path6) && (method === "POST" || method === "PUT" || method === "DELETE")) {
     return unsupportedResponse("Email two-step login is not supported by this server.");
   }
-  if (path5 === "/api/accounts/profile") {
+  if (path6 === "/api/accounts/profile") {
     if (method === "GET") return handleGetProfile(request, env, userId);
     if (method === "PUT") return handleUpdateProfile(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if ((path5 === "/api/accounts/password" || path5 === "/api/accounts/change-password") && (method === "POST" || method === "PUT")) {
+  if ((path6 === "/api/accounts/password" || path6 === "/api/accounts/change-password") && (method === "POST" || method === "PUT")) {
     return handleChangePassword(request, env, userId);
   }
-  if (path5 === "/api/accounts/keys") {
+  if (path6 === "/api/accounts/keys") {
     if (method === "GET") return handleGetKeys(request, env, userId);
     if (method === "POST") return handleSetKeys(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if (path5 === "/api/accounts/totp") {
+  if (path6 === "/api/accounts/totp") {
     if (method === "GET") return handleGetTotpStatus(request, env, userId);
     if (method === "PUT" || method === "POST") return handleSetTotpStatus(request, env, userId);
     return null;
   }
-  if ((path5 === "/api/accounts/totp/recovery-code" || path5 === "/api/two-factor/get-recover") && method === "POST") {
+  if ((path6 === "/api/accounts/totp/recovery-code" || path6 === "/api/two-factor/get-recover") && method === "POST") {
     return handleGetTotpRecoveryCode(request, env, userId);
   }
-  if (path5 === "/api/two-factor") {
+  if (path6 === "/api/two-factor") {
     if (method === "GET") return handleGetTwoFactorProviders(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if (path5 === "/api/two-factor/get-authenticator" && method === "POST") {
+  if (path6 === "/api/two-factor/get-authenticator" && method === "POST") {
     return handleGetTwoFactorAuthenticator(request, env, userId);
   }
-  if ((path5 === "/api/two-factor/get-yubikey" || path5 === "/api/two-factor/get-yubi-key") && method === "POST") {
+  if ((path6 === "/api/two-factor/get-yubikey" || path6 === "/api/two-factor/get-yubi-key") && method === "POST") {
     return handleGetTwoFactorYubiKey(request, env, userId);
   }
-  if (path5 === "/api/two-factor/get-device-verification-settings" && method === "POST") {
+  if (path6 === "/api/two-factor/get-device-verification-settings" && method === "POST") {
     return handleGetDeviceVerificationSettings(request, env, userId);
   }
-  if (path5 === "/api/two-factor/device-verification-settings") {
+  if (path6 === "/api/two-factor/device-verification-settings") {
     if (method === "PUT" || method === "POST") return handlePutDeviceVerificationSettings(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if (path5 === "/api/two-factor/get-webauthn" && method === "POST") {
+  if (path6 === "/api/two-factor/get-webauthn" && method === "POST") {
     return handleGetTwoFactorWebAuthn(request, env, userId, currentUser);
   }
-  if (path5 === "/api/two-factor/get-webauthn-challenge" && method === "POST") {
+  if (path6 === "/api/two-factor/get-webauthn-challenge" && method === "POST") {
     return handleGetTwoFactorWebAuthnChallenge(request, env, userId, currentUser);
   }
-  if (path5 === "/api/two-factor/authenticator") {
+  if (path6 === "/api/two-factor/authenticator") {
     if (method === "PUT" || method === "POST") return handlePutTwoFactorAuthenticator(request, env, userId);
     if (method === "DELETE") return handleDisableTwoFactorProvider(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if (path5 === "/api/two-factor/yubikey" || path5 === "/api/two-factor/yubi-key") {
+  if (path6 === "/api/two-factor/yubikey" || path6 === "/api/two-factor/yubi-key") {
     if (method === "PUT" || method === "POST") return handlePutTwoFactorYubiKey(request, env, userId);
     if (method === "DELETE") return handleDisableTwoFactorProvider(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if (path5 === "/api/two-factor/webauthn") {
+  if (path6 === "/api/two-factor/webauthn") {
     if (method === "PUT" || method === "POST") return handlePutTwoFactorWebAuthn(request, env, userId, currentUser);
     if (method === "DELETE") return handleDeleteTwoFactorWebAuthn(request, env, userId, currentUser);
     return errorResponse("Method not allowed", 405);
   }
-  if ((path5 === "/api/two-factor/yubikey/config" || path5 === "/api/two-factor/yubi-key/config") && (method === "PUT" || method === "POST")) {
+  if ((path6 === "/api/two-factor/yubikey/config" || path6 === "/api/two-factor/yubi-key/config") && (method === "PUT" || method === "POST")) {
     return handlePutTwoFactorYubiKeyConfig(request, env, userId);
   }
-  if ((path5 === "/api/two-factor/yubikey/bootstrap" || path5 === "/api/two-factor/yubi-key/bootstrap") && method === "POST") {
+  if ((path6 === "/api/two-factor/yubikey/bootstrap" || path6 === "/api/two-factor/yubi-key/bootstrap") && method === "POST") {
     return handleBootstrapTwoFactorYubiKeyConfig(request, env, userId);
   }
-  if (path5 === "/api/two-factor/disable" && (method === "PUT" || method === "POST")) {
+  if (path6 === "/api/two-factor/disable" && (method === "PUT" || method === "POST")) {
     return handleDisableTwoFactorProvider(request, env, userId);
   }
-  if (path5 === "/api/accounts/revision-date" && method === "GET") {
+  if (path6 === "/api/accounts/revision-date" && method === "GET") {
     return handleGetRevisionDate(request, env, userId);
   }
-  if (path5 === "/api/accounts/verify-password" && method === "POST") {
+  if (path6 === "/api/accounts/verify-password" && method === "POST") {
     return handleVerifyPassword(request, env, userId);
   }
-  if (path5 === "/api/accounts/verify-devices" && (method === "PUT" || method === "POST")) {
+  if (path6 === "/api/accounts/verify-devices" && (method === "PUT" || method === "POST")) {
     return handleSetVerifyDevices(request, env, userId);
   }
-  if ((path5 === "/api/accounts/api-key" || path5 === "/api/accounts/api_key") && method === "POST") {
+  if ((path6 === "/api/accounts/api-key" || path6 === "/api/accounts/api_key") && method === "POST") {
     return handleGetApiKey(request, env, userId);
   }
-  if ((path5 === "/api/accounts/rotate-api-key" || path5 === "/api/accounts/rotate_api_key") && method === "POST") {
+  if ((path6 === "/api/accounts/rotate-api-key" || path6 === "/api/accounts/rotate_api_key") && method === "POST") {
     return handleRotateApiKey(request, env, userId);
   }
-  if (path5 === "/api/webauthn" || path5 === "/webauthn") {
+  if (path6 === "/api/webauthn" || path6 === "/webauthn") {
     if (method === "GET") return handleGetAccountPasskeyCredentials(request, env, userId);
     if (method === "POST") return handleCreateAccountPasskeyCredential(request, env, userId);
     if (method === "PUT") return handleUpdateAccountPasskeyEncryption(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if ((path5 === "/api/webauthn/attestation-options" || path5 === "/webauthn/attestation-options") && method === "POST") {
+  if ((path6 === "/api/webauthn/attestation-options" || path6 === "/webauthn/attestation-options") && method === "POST") {
     return handleGetAccountPasskeyAttestationOptions(request, env, userId, currentUser);
   }
-  if ((path5 === "/api/webauthn/assertion-options" || path5 === "/webauthn/assertion-options") && method === "POST") {
+  if ((path6 === "/api/webauthn/assertion-options" || path6 === "/webauthn/assertion-options") && method === "POST") {
     return handleGetAccountPasskeyUpdateAssertionOptions(request, env, userId, currentUser);
   }
-  const accountPasskeyDeleteMatch = path5.match(/^\/api\/webauthn\/([^/]+)\/delete$/i) || path5.match(/^\/webauthn\/([^/]+)\/delete$/i);
+  const accountPasskeyDeleteMatch = path6.match(/^\/api\/webauthn\/([^/]+)\/delete$/i) || path6.match(/^\/webauthn\/([^/]+)\/delete$/i);
   if (accountPasskeyDeleteMatch && method === "POST") {
     return handleDeleteAccountPasskeyCredential(request, env, userId, accountPasskeyDeleteMatch[1], currentUser);
   }
-  if (path5 === "/api/sync" && method === "GET") {
+  if (path6 === "/api/sync" && method === "GET") {
     return handleSync(request, env, userId);
   }
-  if (path5.startsWith("/notifications/")) {
+  if (path6.startsWith("/notifications/")) {
     return errorResponse("Not found", 404);
   }
-  if (path5 === "/api/ciphers" || path5 === "/api/ciphers/create") {
+  if (path6 === "/api/ciphers" || path6 === "/api/ciphers/create") {
     if (method === "GET") return handleGetCiphers(request, env, userId);
     if (method === "POST") return handleCreateCipher(request, env, userId);
     return null;
   }
-  if (path5 === "/api/ciphers/import" && method === "POST") {
+  if (path6 === "/api/ciphers/import" && method === "POST") {
     return handleCiphersImport(request, env, userId);
   }
-  if (path5 === "/api/ciphers/delete" && method === "POST") {
+  if (path6 === "/api/ciphers/delete" && method === "POST") {
     return handleBulkDeleteCiphers(request, env, userId);
   }
-  if (path5 === "/api/ciphers/delete-permanent" && method === "POST") {
+  if (path6 === "/api/ciphers/delete-permanent" && method === "POST") {
     return handleBulkPermanentDeleteCiphers(request, env, userId);
   }
-  if (path5 === "/api/ciphers/restore" && method === "POST") {
+  if (path6 === "/api/ciphers/restore" && method === "POST") {
     return handleBulkRestoreCiphers(request, env, userId);
   }
-  if (path5 === "/api/ciphers/archive" && (method === "PUT" || method === "POST")) {
+  if (path6 === "/api/ciphers/archive" && (method === "PUT" || method === "POST")) {
     return handleBulkArchiveCiphers(request, env, userId);
   }
-  if (path5 === "/api/ciphers/unarchive" && (method === "PUT" || method === "POST")) {
+  if (path6 === "/api/ciphers/unarchive" && (method === "PUT" || method === "POST")) {
     return handleBulkUnarchiveCiphers(request, env, userId);
   }
-  if (path5 === "/api/ciphers/move" && (method === "POST" || method === "PUT")) {
+  if (path6 === "/api/ciphers/move" && (method === "POST" || method === "PUT")) {
     return handleBulkMoveCiphers(request, env, userId);
   }
-  const cipherMatch = path5.match(/^\/api\/ciphers\/([a-f0-9-]+)(\/.*)?$/i);
+  const cipherMatch = path6.match(/^\/api\/ciphers\/([a-f0-9-]+)(\/.*)?$/i);
   if (cipherMatch) {
     const cipherId = cipherMatch[1];
     const subPath = cipherMatch[2] || "";
@@ -47977,63 +48201,63 @@ async function handleAuthenticatedRoute(request, env, userId, currentUser, path5
       return handleDeleteAttachment(request, env, userId, cipherId, attachmentDeleteMatch[1]);
     }
   }
-  if (path5 === "/api/folders") {
+  if (path6 === "/api/folders") {
     if (method === "GET") return handleGetFolders(request, env, userId);
     if (method === "POST") return handleCreateFolder(request, env, userId);
     return null;
   }
-  if (path5 === "/api/folders/delete" && method === "POST") {
+  if (path6 === "/api/folders/delete" && method === "POST") {
     return handleBulkDeleteFolders(request, env, userId);
   }
-  const folderMatch = path5.match(/^\/api\/folders\/([a-f0-9-]+)$/i);
+  const folderMatch = path6.match(/^\/api\/folders\/([a-f0-9-]+)$/i);
   if (folderMatch) {
     const folderId = folderMatch[1];
     if (method === "GET") return handleGetFolder(request, env, userId, folderId);
     if (method === "PUT") return handleUpdateFolder(request, env, userId, folderId);
     if (method === "DELETE") return handleDeleteFolder(request, env, userId, folderId);
   }
-  if (path5 === "/api/auth-requests" || path5 === "/api/auth-requests/" || path5 === "/auth-requests" || path5 === "/auth-requests/") {
+  if (path6 === "/api/auth-requests" || path6 === "/api/auth-requests/" || path6 === "/auth-requests" || path6 === "/auth-requests/") {
     if (method === "GET") return handleListAuthRequests(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if (path5 === "/api/auth-requests/pending" || path5 === "/auth-requests/pending") {
+  if (path6 === "/api/auth-requests/pending" || path6 === "/auth-requests/pending") {
     if (method === "GET") return handleListPendingAuthRequests(request, env, userId);
     return errorResponse("Method not allowed", 405);
   }
-  if (path5 === "/api/auth-requests/admin-request" || path5 === "/auth-requests/admin-request") {
+  if (path6 === "/api/auth-requests/admin-request" || path6 === "/auth-requests/admin-request") {
     if (method === "POST") return handleCreateAdminAuthRequest(request, env, userId, currentUser.email);
     return errorResponse("Method not allowed", 405);
   }
-  const authRequestMatch = path5.match(/^\/(?:api\/)?auth-requests\/([a-f0-9-]+)$/i);
+  const authRequestMatch = path6.match(/^\/(?:api\/)?auth-requests\/([a-f0-9-]+)$/i);
   if (authRequestMatch) {
     if (method === "GET") return handleGetAuthRequest(request, env, userId, authRequestMatch[1]);
     if (method === "PUT") return handleUpdateAuthRequest(request, env, userId, authRequestMatch[1]);
     return errorResponse("Method not allowed", 405);
   }
-  if (path5 === "/api/collections" || path5.startsWith("/api/collections/")) {
+  if (path6 === "/api/collections" || path6.startsWith("/api/collections/")) {
     if (method === "GET") {
       return jsonResponse({ data: [], object: "list", continuationToken: null });
     }
     return null;
   }
-  if (path5 === "/api/organizations" || path5.startsWith("/api/organizations/")) {
+  if (path6 === "/api/organizations" || path6.startsWith("/api/organizations/")) {
     if (method === "GET") {
       return jsonResponse({ data: [], object: "list", continuationToken: null });
     }
     return null;
   }
-  if (path5 === "/api/sends") {
+  if (path6 === "/api/sends") {
     if (method === "GET") return handleGetSends(request, env, userId);
     if (method === "POST") return handleCreateSend(request, env, userId);
     return null;
   }
-  if (path5 === "/api/sends/file/v2" && method === "POST") {
+  if (path6 === "/api/sends/file/v2" && method === "POST") {
     return handleCreateFileSendV2(request, env, userId);
   }
-  if (path5 === "/api/sends/delete" && method === "POST") {
+  if (path6 === "/api/sends/delete" && method === "POST") {
     return handleBulkDeleteSends(request, env, userId);
   }
-  const sendMatch = path5.match(/^\/api\/sends\/([^/]+)(\/.*)?$/i);
+  const sendMatch = path6.match(/^\/api\/sends\/([^/]+)(\/.*)?$/i);
   if (sendMatch) {
     const sendId = sendMatch[1];
     const subPath = sendMatch[2] || "";
@@ -48055,20 +48279,20 @@ async function handleAuthenticatedRoute(request, env, userId, currentUser, path5
       if (method === "POST" || method === "PUT") return handleUploadSendFile(request, env, userId, sendId, fileId);
     }
   }
-  if (path5 === "/api/policies" || path5.startsWith("/api/policies/")) {
+  if (path6 === "/api/policies" || path6.startsWith("/api/policies/")) {
     if (method === "GET") {
       return jsonResponse({ data: [], object: "list", continuationToken: null });
     }
     return null;
   }
-  if (path5 === "/api/settings/domains" || path5 === "/settings/domains") {
+  if (path6 === "/api/settings/domains" || path6 === "/settings/domains") {
     if (method === "GET") return handleGetDomains(env, userId);
     if (method === "PUT" || method === "POST") return handleUpdateDomains(request, env, userId);
     return null;
   }
-  const authenticatedDeviceResponse = await handleAuthenticatedDeviceRoute(request, env, userId, path5, method);
+  const authenticatedDeviceResponse = await handleAuthenticatedDeviceRoute(request, env, userId, path6, method);
   if (authenticatedDeviceResponse) return authenticatedDeviceResponse;
-  const adminResponse = await handleAdminRoute(request, env, currentUser, path5, method);
+  const adminResponse = await handleAdminRoute(request, env, currentUser, path6, method);
   if (adminResponse) return adminResponse;
   return null;
 }
@@ -49365,8 +49589,8 @@ async function buildWebBootstrapResponse(env) {
     websiteIconsEnabled: isWebsiteIconProxyEnabled(env)
   };
 }
-async function handlePublicRoute(request, env, path5, method, enforcePublicRateLimit) {
-  if (path5 === "/.well-known/appspecific/com.chrome.devtools.json" && method === "GET") {
+async function handlePublicRoute(request, env, path6, method, enforcePublicRateLimit) {
+  if (path6 === "/.well-known/appspecific/com.chrome.devtools.json" && method === "GET") {
     return new Response("{}", {
       status: 200,
       headers: {
@@ -49375,117 +49599,117 @@ async function handlePublicRoute(request, env, path5, method, enforcePublicRateL
       }
     });
   }
-  if ((path5 === "/api/web-bootstrap" || path5 === "/web-bootstrap") && method === "GET") {
+  if ((path6 === "/api/web-bootstrap" || path6 === "/web-bootstrap") && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-read", LIMITS.rateLimit.publicReadRequestsPerMinute);
     if (blocked) return blocked;
     return jsonResponse(await buildWebBootstrapResponse(env));
   }
-  if (path5 === "/fill-assist/manifest.json" && method === "GET") {
+  if (path6 === "/fill-assist/manifest.json" && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-read", LIMITS.rateLimit.publicReadRequestsPerMinute);
     if (blocked) return blocked;
     return handleFillAssistManifest();
   }
-  if ((path5 === "/v1/assetlinks:check" || path5 === "/api/v1/assetlinks:check") && method === "GET") {
+  if ((path6 === "/v1/assetlinks:check" || path6 === "/api/v1/assetlinks:check") && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-read", LIMITS.rateLimit.publicReadRequestsPerMinute);
     if (blocked) return blocked;
     return handleDigitalAssetLinkCheck();
   }
-  const fillAssistFormsMatch = path5.match(/^\/fill-assist\/([^/]+)$/i);
+  const fillAssistFormsMatch = path6.match(/^\/fill-assist\/([^/]+)$/i);
   if (fillAssistFormsMatch && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-read", LIMITS.rateLimit.publicReadRequestsPerMinute);
     if (blocked) return blocked;
     return handleFillAssistForms(fillAssistFormsMatch[1]);
   }
-  const iconMatch = path5.match(/^\/icons\/([^/]+)\/icon\.png$/i);
+  const iconMatch = path6.match(/^\/icons\/([^/]+)\/icon\.png$/i);
   if (iconMatch && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-icon", LIMITS.rateLimit.publicIconRequestsPerMinute);
     if (blocked) return blocked;
     const fallbackMode = new URL(request.url).searchParams.get("fallback") === "404" ? "not-found" : "default";
     return handleWebsiteIcon(env, iconMatch[1], fallbackMode);
   }
-  const publicAttachmentMatch = path5.match(/^\/api\/attachments\/([a-f0-9-]+)\/([a-f0-9-]+)$/i);
+  const publicAttachmentMatch = path6.match(/^\/api\/attachments\/([a-f0-9-]+)\/([a-f0-9-]+)$/i);
   if (publicAttachmentMatch && method === "GET") {
     return handlePublicDownloadAttachment(request, env, publicAttachmentMatch[1], publicAttachmentMatch[2]);
   }
-  const publicAttachmentUploadMatch = path5.match(/^\/api\/ciphers\/([a-f0-9-]+)\/attachment\/([a-f0-9-]+)$/i);
+  const publicAttachmentUploadMatch = path6.match(/^\/api\/ciphers\/([a-f0-9-]+)\/attachment\/([a-f0-9-]+)$/i);
   if (publicAttachmentUploadMatch && (method === "POST" || method === "PUT") && new URL(request.url).searchParams.has("token")) {
     return handlePublicUploadAttachment(request, env, publicAttachmentUploadMatch[1], publicAttachmentUploadMatch[2]);
   }
-  const publicSendUploadMatch = path5.match(/^\/api\/sends\/([^/]+)\/file\/([^/]+)\/?$/i);
+  const publicSendUploadMatch = path6.match(/^\/api\/sends\/([^/]+)\/file\/([^/]+)\/?$/i);
   if (publicSendUploadMatch && (method === "POST" || method === "PUT") && new URL(request.url).searchParams.has("token")) {
     return handlePublicUploadSendFile(request, env, publicSendUploadMatch[1], publicSendUploadMatch[2]);
   }
-  const sendAccessMatch = path5.match(/^\/api\/sends\/access\/([^/]+)$/i);
+  const sendAccessMatch = path6.match(/^\/api\/sends\/access\/([^/]+)$/i);
   if (sendAccessMatch && method === "POST") {
     const blocked = await enforcePublicRateLimit();
     if (blocked) return blocked;
     return handleAccessSend(request, env, sendAccessMatch[1]);
   }
-  if (path5 === "/api/sends/access" && method === "POST") {
+  if (path6 === "/api/sends/access" && method === "POST") {
     const blocked = await enforcePublicRateLimit();
     if (blocked) return blocked;
     return handleAccessSendV2(request, env);
   }
-  const sendAccessFileV2Match = path5.match(/^\/api\/sends\/access\/file\/([^/]+)\/?$/i);
+  const sendAccessFileV2Match = path6.match(/^\/api\/sends\/access\/file\/([^/]+)\/?$/i);
   if (sendAccessFileV2Match && method === "POST") {
     const blocked = await enforcePublicRateLimit();
     if (blocked) return blocked;
     return handleAccessSendFileV2(request, env, sendAccessFileV2Match[1]);
   }
-  const sendAccessFileMatch = path5.match(/^\/api\/sends\/([^/]+)\/access\/file\/([^/]+)\/?$/i);
+  const sendAccessFileMatch = path6.match(/^\/api\/sends\/([^/]+)\/access\/file\/([^/]+)\/?$/i);
   if (sendAccessFileMatch && method === "POST") {
     const blocked = await enforcePublicRateLimit();
     if (blocked) return blocked;
     return handleAccessSendFile(request, env, sendAccessFileMatch[1], sendAccessFileMatch[2]);
   }
-  const sendDownloadMatch = path5.match(/^\/api\/sends\/([^/]+)\/([^/]+)\/?$/i);
+  const sendDownloadMatch = path6.match(/^\/api\/sends\/([^/]+)\/([^/]+)\/?$/i);
   if (sendDownloadMatch && method === "GET") {
     return handleDownloadSendFile(request, env, sendDownloadMatch[1], sendDownloadMatch[2]);
   }
-  if ((path5 === "/api/auth-requests" || path5 === "/api/auth-requests/" || path5 === "/auth-requests" || path5 === "/auth-requests/") && method === "POST") {
+  if ((path6 === "/api/auth-requests" || path6 === "/api/auth-requests/" || path6 === "/auth-requests" || path6 === "/auth-requests/") && method === "POST") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return handleCreateAuthRequest(request, env);
   }
-  const authRequestResponseMatch = path5.match(/^\/(?:api\/)?auth-requests\/([a-f0-9-]+)\/response$/i);
+  const authRequestResponseMatch = path6.match(/^\/(?:api\/)?auth-requests\/([a-f0-9-]+)\/response$/i);
   if (authRequestResponseMatch && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return handleGetAuthRequestResponse(request, env, authRequestResponseMatch[1]);
   }
-  if (path5 === "/identity/connect/token" && method === "POST") {
+  if (path6 === "/identity/connect/token" && method === "POST") {
     return handleToken(request, env);
   }
-  if (path5 === "/api/devices/knowndevice" && method === "GET") {
+  if (path6 === "/api/devices/knowndevice" && method === "GET") {
     const blocked = await enforcePublicRateLimit();
     if (blocked) return jsonResponse(false);
     return handleKnownDevice(request, env);
   }
-  const clearDeviceTokenMatch = path5.match(/^\/api\/devices\/identifier\/([^/]+)\/clear-token$/i);
+  const clearDeviceTokenMatch = path6.match(/^\/api\/devices\/identifier\/([^/]+)\/clear-token$/i);
   if (clearDeviceTokenMatch && (method === "PUT" || method === "POST")) {
     return new Response(null, { status: 200 });
   }
-  if ((path5 === "/identity/connect/revocation" || path5 === "/identity/connect/revoke") && method === "POST") {
+  if ((path6 === "/identity/connect/revocation" || path6 === "/identity/connect/revoke") && method === "POST") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return handleRevocation(request, env);
   }
-  if (path5 === "/identity/accounts/prelogin" && method === "POST") {
+  if (path6 === "/identity/accounts/prelogin" && method === "POST") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return handlePrelogin(request, env);
   }
-  if (path5 === "/identity/accounts/prelogin/password" && method === "POST") {
+  if (path6 === "/identity/accounts/prelogin/password" && method === "POST") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return handlePrelogin(request, env);
   }
-  if (path5 === "/identity/accounts/webauthn/assertion-options" && method === "GET") {
+  if (path6 === "/identity/accounts/webauthn/assertion-options" && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return handleGetAccountPasskeyAssertionOptions(request, env);
   }
-  if ((path5 === "/identity/accounts/recover-2fa" || path5 === "/api/accounts/recover-2fa") && method === "POST") {
+  if ((path6 === "/identity/accounts/recover-2fa" || path6 === "/api/accounts/recover-2fa") && method === "POST") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return handleRecoverTwoFactor(request, env);
@@ -49507,12 +49731,12 @@ async function handlePublicRoute(request, env, path5, method, enforcePublicRateL
     "/api/two-factor/send-email-login",
     "/two-factor/send-email-login"
   ]);
-  if (publicMailBackedPaths.has(path5) && method === "POST") {
+  if (publicMailBackedPaths.has(path6) && method === "POST") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return unsupportedResponse("Email delivery is not supported by this server.");
   }
-  if (path5 === "/api/accounts/password-hint" && method === "POST") {
+  if (path6 === "/api/accounts/password-hint" && method === "POST") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     if (!isSameOriginWriteRequest(request)) {
@@ -49523,18 +49747,18 @@ async function handlePublicRoute(request, env, path5, method, enforcePublicRateL
     }
     return handleGetPasswordHint(request, env);
   }
-  if ((path5 === "/config" || path5 === "/api/config") && method === "GET") {
+  if ((path6 === "/config" || path6 === "/api/config") && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-read", LIMITS.rateLimit.publicReadRequestsPerMinute);
     if (blocked) return blocked;
     const origin = new URL(request.url).origin;
     return jsonResponse(buildConfigResponse(origin), 200, { "Cache-Control": "no-store" });
   }
-  if (path5 === "/api/version" && method === "GET") {
+  if (path6 === "/api/version" && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-read", LIMITS.rateLimit.publicReadRequestsPerMinute);
     if (blocked) return blocked;
     return jsonResponse(LIMITS.compatibility.bitwardenServerVersion);
   }
-  if (path5 === "/api/accounts/register" && method === "POST") {
+  if (path6 === "/api/accounts/register" && method === "POST") {
     const blocked = await enforcePublicRateLimit("register", LIMITS.rateLimit.registerRequestsPerMinute);
     if (blocked) return blocked;
     if (!isSameOriginWriteRequest(request)) {
@@ -49545,13 +49769,13 @@ async function handlePublicRoute(request, env, path5, method, enforcePublicRateL
     }
     return handleRegister(request, env);
   }
-  if (path5 === "/notifications/hub/negotiate" && method === "POST") {
+  if (path6 === "/notifications/hub/negotiate" && method === "POST") {
     return handleNotificationsNegotiate(request, env);
   }
-  if (path5 === "/notifications/hub" && method === "GET") {
+  if (path6 === "/notifications/hub" && method === "GET") {
     return handleNotificationsHub(request, env);
   }
-  if (path5 === "/notifications/anonymous-hub" && method === "GET") {
+  if (path6 === "/notifications/anonymous-hub" && method === "GET") {
     const blocked = await enforcePublicRateLimit("public-sensitive", LIMITS.rateLimit.sensitivePublicRequestsPerMinute);
     if (blocked) return blocked;
     return handleAnonymousNotificationsHub(request, env);
@@ -49566,32 +49790,32 @@ function jwtSecretUnsafeReason2(env) {
   if (secret.length < LIMITS.auth.jwtSecretMinLength) return "too_short";
   return null;
 }
-function canServeWithUnsafeJwtSecret(path5, method) {
+function canServeWithUnsafeJwtSecret(path6, method) {
   if (method === "OPTIONS") return true;
-  if (method === "GET" && (path5 === "/api/web-bootstrap" || path5 === "/web-bootstrap")) return true;
-  if (method === "GET" && (path5 === "/config" || path5 === "/api/config" || path5 === "/api/version")) return true;
-  if (method === "GET" && path5 === "/.well-known/appspecific/com.chrome.devtools.json") return true;
-  if (method === "GET" && path5 === "/fill-assist/manifest.json") return true;
-  if (method === "GET" && /^\/fill-assist\/[^/]+$/i.test(path5)) return true;
-  if (method === "GET" && (path5 === "/v1/assetlinks:check" || path5 === "/api/v1/assetlinks:check")) return true;
-  if (method === "GET" && /^\/icons\/[^/]+\/icon\.png$/i.test(path5)) return true;
+  if (method === "GET" && (path6 === "/api/web-bootstrap" || path6 === "/web-bootstrap")) return true;
+  if (method === "GET" && (path6 === "/config" || path6 === "/api/config" || path6 === "/api/version")) return true;
+  if (method === "GET" && path6 === "/.well-known/appspecific/com.chrome.devtools.json") return true;
+  if (method === "GET" && path6 === "/fill-assist/manifest.json") return true;
+  if (method === "GET" && /^\/fill-assist\/[^/]+$/i.test(path6)) return true;
+  if (method === "GET" && (path6 === "/v1/assetlinks:check" || path6 === "/api/v1/assetlinks:check")) return true;
+  if (method === "GET" && /^\/icons\/[^/]+\/icon\.png$/i.test(path6)) return true;
   return false;
 }
-function isImportBypassRequest(request, path5, method) {
+function isImportBypassRequest(request, path6, method) {
   if (request.headers.get("X-NodeWarden-Import") !== "1") return false;
   if (method === "POST") {
-    if (path5 === "/api/ciphers/import") return true;
-    if (/^\/api\/ciphers\/[a-f0-9-]+\/attachment\/v2$/i.test(path5)) return true;
-    if (/^\/api\/ciphers\/[a-f0-9-]+\/attachment\/[a-f0-9-]+$/i.test(path5)) return true;
+    if (path6 === "/api/ciphers/import") return true;
+    if (/^\/api\/ciphers\/[a-f0-9-]+\/attachment\/v2$/i.test(path6)) return true;
+    if (/^\/api\/ciphers\/[a-f0-9-]+\/attachment\/[a-f0-9-]+$/i.test(path6)) return true;
   }
   return false;
 }
 var BODY_LIMIT_METHODS = /* @__PURE__ */ new Set(["POST", "PUT", "PATCH", "DELETE"]);
-function isLargeUploadPath(path5) {
-  return /^\/api\/ciphers\/[a-f0-9-]+\/attachment\/[a-f0-9-]+$/i.test(path5) || /^\/api\/sends\/[a-f0-9-]+\/file\/[a-f0-9-]+$/i.test(path5) || path5 === "/api/admin/backup/import";
+function isLargeUploadPath(path6) {
+  return /^\/api\/ciphers\/[a-f0-9-]+\/attachment\/[a-f0-9-]+$/i.test(path6) || /^\/api\/sends\/[a-f0-9-]+\/file\/[a-f0-9-]+$/i.test(path6) || path6 === "/api/admin/backup/import";
 }
-async function enforceRequestBodyLimit(request, path5, method) {
-  if (!BODY_LIMIT_METHODS.has(method) || isLargeUploadPath(path5) || !request.body) {
+async function enforceRequestBodyLimit(request, path6, method) {
+  if (!BODY_LIMIT_METHODS.has(method) || isLargeUploadPath(path6) || !request.body) {
     return request;
   }
   const contentLengthRaw = request.headers.get("Content-Length");
@@ -49636,7 +49860,7 @@ async function enforceRequestBodyLimit(request, path5, method) {
 }
 async function handleRequest(request, env) {
   const url = new URL(request.url);
-  const path5 = url.pathname;
+  const path6 = url.pathname;
   const method = request.method;
   const clientId = getClientIdentifier(request);
   async function enforcePublicRateLimit(category = "public", maxRequests = LIMITS.rateLimit.publicRequestsPerMinute) {
@@ -49675,16 +49899,16 @@ async function handleRequest(request, env) {
     return handleCors(request, env);
   }
   try {
-    const bodyLimitResult = await enforceRequestBodyLimit(request, path5, method);
+    const bodyLimitResult = await enforceRequestBodyLimit(request, path6, method);
     if (bodyLimitResult instanceof Response) {
       return bodyLimitResult;
     }
     request = bodyLimitResult;
     const secretIssue = jwtSecretUnsafeReason2(env);
-    if (secretIssue && !canServeWithUnsafeJwtSecret(path5, method)) {
+    if (secretIssue && !canServeWithUnsafeJwtSecret(path6, method)) {
       return errorResponse("Server configuration error: JWT_SECRET is not set or too weak", 500);
     }
-    const publicResponse = await handlePublicRoute(request, env, path5, method, enforcePublicRateLimit);
+    const publicResponse = await handlePublicRoute(request, env, path6, method, enforcePublicRateLimit);
     if (publicResponse) return publicResponse;
     const auth = new AuthService(env);
     const authHeader = request.headers.get("Authorization");
@@ -49703,7 +49927,7 @@ async function handleRequest(request, env) {
     if (currentUser.status !== "active") {
       return errorResponse("Account is disabled", 403);
     }
-    if (!isImportBypassRequest(request, path5, method)) {
+    if (!isImportBypassRequest(request, path6, method)) {
       const rateLimit = new RateLimitService(env.DB);
       const rateLimitCheck = await rateLimit.consumeBudget(`${userId}:api`, LIMITS.rateLimit.apiRequestsPerMinute);
       if (!rateLimitCheck.allowed) {
@@ -49723,7 +49947,7 @@ async function handleRequest(request, env) {
         );
       }
     }
-    const authenticatedResponse = await handleAuthenticatedRoute(request, env, userId, currentUser, path5, method);
+    const authenticatedResponse = await handleAuthenticatedRoute(request, env, userId, currentUser, path6, method);
     if (authenticatedResponse) return authenticatedResponse;
     return errorResponse("Not found", 404);
   } catch (error) {
@@ -49753,9 +49977,9 @@ var BACKEND_EXACT_PATHS = /* @__PURE__ */ new Set([
   "/settings/domains"
 ]);
 function isBackendRequestPath(pathname) {
-  const path5 = pathname.toLowerCase();
-  if (BACKEND_EXACT_PATHS.has(path5)) return true;
-  return BACKEND_PATH_PREFIXES.some((prefix) => path5 === prefix || path5.startsWith(`${prefix}/`));
+  const path6 = pathname.toLowerCase();
+  if (BACKEND_EXACT_PATHS.has(path6)) return true;
+  return BACKEND_PATH_PREFIXES.some((prefix) => path6 === prefix || path6.startsWith(`${prefix}/`));
 }
 function isWebVaultHidden(env) {
   return String(env.HIDE_WEB_VAULT || "").trim() === "1";
@@ -49866,8 +50090,8 @@ var src_default = {
 };
 
 // local/env.ts
-var import_node_fs4 = require("node:fs");
-var path4 = __toESM(require("node:path"), 1);
+var import_node_fs5 = require("node:fs");
+var path5 = __toESM(require("node:path"), 1);
 var import_node_crypto = require("node:crypto");
 
 // local/d1.ts
@@ -49998,8 +50222,8 @@ var LocalD1Database = class {
 };
 
 // local/r2.ts
-var import_node_fs = require("node:fs");
-var path = __toESM(require("node:path"), 1);
+var import_node_fs2 = require("node:fs");
+var path2 = __toESM(require("node:path"), 1);
 var import_node_stream = require("node:stream");
 function isReadableStream(value) {
   return typeof value?.getReader === "function";
@@ -50010,15 +50234,15 @@ var LocalR2Bucket = class {
   }
   rootDir;
   metaPath(key) {
-    return path.join(this.rootDir, ".meta", key + ".json");
+    return path2.join(this.rootDir, ".meta", key + ".json");
   }
   dataPath(key) {
-    return path.join(this.rootDir, key);
+    return path2.join(this.rootDir, key);
   }
   assertSafeKey(key) {
     if (!key || key.includes("\0")) throw new Error("Invalid R2 key");
-    const normalized = path.normalize(key);
-    if (normalized.startsWith("..") || path.isAbsolute(normalized)) throw new Error("Invalid R2 key");
+    const normalized = path2.normalize(key);
+    if (normalized.startsWith("..") || path2.isAbsolute(normalized)) throw new Error("Invalid R2 key");
   }
   async put(key, value, options) {
     this.assertSafeKey(key);
@@ -50042,21 +50266,21 @@ var LocalR2Bucket = class {
       throw new Error("Unsupported R2 value type");
     }
     const target = this.dataPath(key);
-    await import_node_fs.promises.mkdir(path.dirname(target), { recursive: true });
-    await import_node_fs.promises.writeFile(target, buffer);
+    await import_node_fs2.promises.mkdir(path2.dirname(target), { recursive: true });
+    await import_node_fs2.promises.writeFile(target, buffer);
     const meta = {
       size: buffer.byteLength,
       contentType: options?.httpMetadata?.contentType || null,
       customMetadata: options?.customMetadata || null
     };
     const mpath = this.metaPath(key);
-    await import_node_fs.promises.mkdir(path.dirname(mpath), { recursive: true });
-    await import_node_fs.promises.writeFile(mpath, JSON.stringify(meta), "utf8");
+    await import_node_fs2.promises.mkdir(path2.dirname(mpath), { recursive: true });
+    await import_node_fs2.promises.writeFile(mpath, JSON.stringify(meta), "utf8");
   }
   async get(key) {
     this.assertSafeKey(key);
     try {
-      const buffer = await import_node_fs.promises.readFile(this.dataPath(key));
+      const buffer = await import_node_fs2.promises.readFile(this.dataPath(key));
       const meta = await this.readMeta(key);
       return {
         key,
@@ -50073,7 +50297,7 @@ var LocalR2Bucket = class {
   async head(key) {
     this.assertSafeKey(key);
     try {
-      const stat = await import_node_fs.promises.stat(this.dataPath(key));
+      const stat = await import_node_fs2.promises.stat(this.dataPath(key));
       const meta = await this.readMeta(key);
       return {
         key,
@@ -50088,8 +50312,8 @@ var LocalR2Bucket = class {
   }
   async delete(key) {
     this.assertSafeKey(key);
-    await import_node_fs.promises.rm(this.dataPath(key), { force: true });
-    await import_node_fs.promises.rm(this.metaPath(key), { force: true });
+    await import_node_fs2.promises.rm(this.dataPath(key), { force: true });
+    await import_node_fs2.promises.rm(this.metaPath(key), { force: true });
   }
   async list(prefix = "") {
     this.assertSafeKey(prefix);
@@ -50097,27 +50321,27 @@ var LocalR2Bucket = class {
     const walk = async (dir, rel) => {
       let entries;
       try {
-        entries = await import_node_fs.promises.readdir(dir, { withFileTypes: true });
+        entries = await import_node_fs2.promises.readdir(dir, { withFileTypes: true });
       } catch {
         return;
       }
       for (const entry of entries) {
-        const full = path.join(dir, entry.name);
+        const full = path2.join(dir, entry.name);
         const relPath = rel ? `${rel}/${entry.name}` : entry.name;
         if (entry.isDirectory()) {
           await walk(full, relPath);
         } else {
-          const stat = await import_node_fs.promises.stat(full);
+          const stat = await import_node_fs2.promises.stat(full);
           objects.push({ key: relPath, size: stat.size });
         }
       }
     };
-    await walk(path.join(this.rootDir, prefix), prefix);
+    await walk(path2.join(this.rootDir, prefix), prefix);
     return { objects, truncated: false, cursor: null };
   }
   async readMeta(key) {
     try {
-      const raw = await import_node_fs.promises.readFile(this.metaPath(key), "utf8");
+      const raw = await import_node_fs2.promises.readFile(this.metaPath(key), "utf8");
       return JSON.parse(raw);
     } catch {
       return null;
@@ -50126,23 +50350,23 @@ var LocalR2Bucket = class {
 };
 
 // local/kv.ts
-var import_node_fs2 = require("node:fs");
-var path2 = __toESM(require("node:path"), 1);
+var import_node_fs3 = require("node:fs");
+var path3 = __toESM(require("node:path"), 1);
 var LocalKVNamespace = class {
   constructor(rootDir) {
     this.rootDir = rootDir;
   }
   rootDir;
   dataPath(key) {
-    return path2.join(this.rootDir, key);
+    return path3.join(this.rootDir, key);
   }
   metaPath(key) {
-    return path2.join(this.rootDir, ".meta", key + ".json");
+    return path3.join(this.rootDir, ".meta", key + ".json");
   }
   assertSafeKey(key) {
     if (!key || key.includes("\0")) throw new Error("Invalid KV key");
-    const normalized = path2.normalize(key);
-    if (normalized.startsWith("..") || path2.isAbsolute(normalized)) throw new Error("Invalid KV key");
+    const normalized = path3.normalize(key);
+    if (normalized.startsWith("..") || path3.isAbsolute(normalized)) throw new Error("Invalid KV key");
   }
   async put(key, value, options) {
     this.assertSafeKey(key);
@@ -50157,21 +50381,21 @@ var LocalKVNamespace = class {
       throw new Error("Unsupported KV value type");
     }
     const target = this.dataPath(key);
-    await import_node_fs2.promises.mkdir(path2.dirname(target), { recursive: true });
-    await import_node_fs2.promises.writeFile(target, buffer);
+    await import_node_fs3.promises.mkdir(path3.dirname(target), { recursive: true });
+    await import_node_fs3.promises.writeFile(target, buffer);
     if (options?.metadata) {
       const mpath = this.metaPath(key);
-      await import_node_fs2.promises.mkdir(path2.dirname(mpath), { recursive: true });
-      await import_node_fs2.promises.writeFile(mpath, JSON.stringify(options.metadata), "utf8");
+      await import_node_fs3.promises.mkdir(path3.dirname(mpath), { recursive: true });
+      await import_node_fs3.promises.writeFile(mpath, JSON.stringify(options.metadata), "utf8");
     } else {
-      await import_node_fs2.promises.rm(this.metaPath(key), { force: true });
+      await import_node_fs3.promises.rm(this.metaPath(key), { force: true });
     }
   }
   async get(key, type = "text") {
     this.assertSafeKey(key);
     let buffer;
     try {
-      buffer = await import_node_fs2.promises.readFile(this.dataPath(key));
+      buffer = await import_node_fs3.promises.readFile(this.dataPath(key));
     } catch (error) {
       if (error.code === "ENOENT") return null;
       throw error;
@@ -50196,7 +50420,7 @@ var LocalKVNamespace = class {
     const value = await this.get(key, type);
     let metadata = null;
     try {
-      const raw = await import_node_fs2.promises.readFile(this.metaPath(key), "utf8");
+      const raw = await import_node_fs3.promises.readFile(this.metaPath(key), "utf8");
       metadata = JSON.parse(raw);
     } catch {
       metadata = null;
@@ -50205,8 +50429,8 @@ var LocalKVNamespace = class {
   }
   async delete(key) {
     this.assertSafeKey(key);
-    await import_node_fs2.promises.rm(this.dataPath(key), { force: true });
-    await import_node_fs2.promises.rm(this.metaPath(key), { force: true });
+    await import_node_fs3.promises.rm(this.dataPath(key), { force: true });
+    await import_node_fs3.promises.rm(this.metaPath(key), { force: true });
   }
   async list(prefix = "") {
     this.assertSafeKey(prefix);
@@ -50214,19 +50438,19 @@ var LocalKVNamespace = class {
     const walk = async (dir, rel) => {
       let entries;
       try {
-        entries = await import_node_fs2.promises.readdir(dir, { withFileTypes: true });
+        entries = await import_node_fs3.promises.readdir(dir, { withFileTypes: true });
       } catch {
         return;
       }
       for (const entry of entries) {
-        const full = path2.join(dir, entry.name);
+        const full = path3.join(dir, entry.name);
         const relPath = rel ? `${rel}/${entry.name}` : entry.name;
         if (entry.isDirectory()) {
           await walk(full, relPath);
         } else {
           let metadata;
           try {
-            metadata = JSON.parse(await import_node_fs2.promises.readFile(this.metaPath(relPath), "utf8"));
+            metadata = JSON.parse(await import_node_fs3.promises.readFile(this.metaPath(relPath), "utf8"));
           } catch {
             metadata = void 0;
           }
@@ -50234,14 +50458,14 @@ var LocalKVNamespace = class {
         }
       }
     };
-    await walk(path2.join(this.rootDir, prefix), prefix);
+    await walk(path3.join(this.rootDir, prefix), prefix);
     return { keys, list_complete: true, cursor: null };
   }
 };
 
 // local/assets.ts
-var import_node_fs3 = require("node:fs");
-var path3 = __toESM(require("node:path"), 1);
+var import_node_fs4 = require("node:fs");
+var path4 = __toESM(require("node:path"), 1);
 var MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -50271,29 +50495,29 @@ var LocalAssets = class {
     if (pathname.endsWith("/")) pathname += "index.html";
     let filePath;
     try {
-      filePath = path3.normalize(path3.join(this.distDir, decodeURIComponent(pathname)));
+      filePath = path4.normalize(path4.join(this.distDir, decodeURIComponent(pathname)));
       if (!filePath.startsWith(this.distDir)) return new Response("Forbidden", { status: 403 });
     } catch {
       return new Response("Bad Request", { status: 400 });
     }
     let content = null;
     try {
-      const stat = await import_node_fs3.promises.stat(filePath);
+      const stat = await import_node_fs4.promises.stat(filePath);
       if (stat.isFile()) {
-        content = await import_node_fs3.promises.readFile(filePath);
+        content = await import_node_fs4.promises.readFile(filePath);
       }
     } catch {
       content = null;
     }
     if (content === null) {
       try {
-        content = await import_node_fs3.promises.readFile(path3.join(this.distDir, "index.html"));
-        filePath = path3.join(this.distDir, "index.html");
+        content = await import_node_fs4.promises.readFile(path4.join(this.distDir, "index.html"));
+        filePath = path4.join(this.distDir, "index.html");
       } catch {
         return null;
       }
     }
-    const ext = path3.extname(filePath).toLowerCase();
+    const ext = path4.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || "application/octet-stream";
     const headers = new Headers({ "Content-Type": contentType });
     if (ext === ".html") headers.set("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet");
@@ -50306,8 +50530,8 @@ var LocalAssets = class {
 
 // local/env.ts
 function parseLocalConfig() {
-  const baseDir = path4.resolve(process.env.NODEWARDEN_DATA_DIR || path4.join(process.cwd(), "nw-data"));
-  const distDir = path4.resolve(process.env.NODEWARDEN_DIST_DIR || path4.join(process.cwd(), "dist"));
+  const baseDir = path5.resolve(process.env.NODEWARDEN_DATA_DIR || path5.join(process.cwd(), "nw-data"));
+  const distDir = path5.resolve(process.env.NODEWARDEN_DIST_DIR || path5.join(process.cwd(), "dist"));
   const jwtSecret = process.env.JWT_SECRET || (() => {
     if (process.env.NODEWARDEN_ALLOW_INSECURE_JWT === "1") {
       const generated = (0, import_node_crypto.randomBytes)(48).toString("hex");
@@ -50329,12 +50553,12 @@ function parseLocalConfig() {
   };
 }
 async function createLocalEnv(config) {
-  await import_node_fs4.promises.mkdir(path4.join(config.dataDir, "attachments"), { recursive: true });
-  await import_node_fs4.promises.mkdir(path4.join(config.dataDir, "kv"), { recursive: true });
-  const dbPath = path4.join(config.dataDir, "nodewarden.db");
+  await import_node_fs5.promises.mkdir(path5.join(config.dataDir, "attachments"), { recursive: true });
+  await import_node_fs5.promises.mkdir(path5.join(config.dataDir, "kv"), { recursive: true });
+  const dbPath = path5.join(config.dataDir, "nodewarden.db");
   const db = new LocalD1Database(dbPath);
-  const attachments = new LocalR2Bucket(path4.join(config.dataDir, "attachments"));
-  const attachmentsKv = new LocalKVNamespace(path4.join(config.dataDir, "kv"));
+  const attachments = new LocalR2Bucket(path5.join(config.dataDir, "attachments"));
+  const attachmentsKv = new LocalKVNamespace(path5.join(config.dataDir, "kv"));
   const assets = new LocalAssets(config.distDir);
   const notificationsHubState = new LocalDurableObjectState();
   const backupRunnerState = new LocalDurableObjectState();
@@ -50590,10 +50814,244 @@ function installLocalCaches() {
   }
 }
 
+// local/service-install.ts
+var import_node_fs6 = require("node:fs");
+var import_node_crypto2 = require("node:crypto");
+var import_node_child_process2 = require("node:child_process");
+var SERVICE_NAME = "nodewarden";
+function detectInitSystem() {
+  const override = process.env.NODEWARDEN_SERVICE_INIT;
+  if (override === "systemd" || override === "openrc") return override;
+  try {
+    const pid1 = (0, import_node_fs6.readFileSync)("/proc/1/comm", "utf8").trim();
+    if (pid1 === "systemd" || (0, import_node_fs6.existsSync)("/run/systemd/system")) return "systemd";
+  } catch {
+  }
+  try {
+    if ((0, import_node_fs6.existsSync)("/etc/alpine-release")) return "openrc";
+  } catch {
+  }
+  return "unknown";
+}
+function isRoot() {
+  try {
+    return typeof process.getuid === "function" && process.getuid() === 0;
+  } catch {
+    return false;
+  }
+}
+function ensureSecretFile(prefix, config) {
+  const dir = prefix === "" ? "/etc" : `${prefix}/etc`;
+  (0, import_node_fs6.mkdirSync)(dir, { recursive: true });
+  const path6 = `${dir}/nodewarden.env`;
+  const jwtSecret = config.jwtSecret || (0, import_node_crypto2.randomBytes)(48).toString("hex");
+  if (!(0, import_node_fs6.existsSync)(path6)) {
+    (0, import_node_fs6.writeFileSync)(path6, `JWT_SECRET=${jwtSecret}
+`, { mode: 384 });
+  } else {
+    const existing = (0, import_node_fs6.readFileSync)(path6, "utf8").match(/JWT_SECRET=(.+)/)?.[1]?.trim();
+    if (existing) {
+      return { path: path6, jwtSecret: existing };
+    }
+    (0, import_node_fs6.writeFileSync)(path6, `JWT_SECRET=${jwtSecret}
+`, { mode: 384 });
+  }
+  try {
+    (0, import_node_fs6.chmodSync)(path6, 384);
+  } catch {
+  }
+  return { path: path6, jwtSecret };
+}
+function systemdUnit(config, execPath, envFile) {
+  return `# NodeWarden Local \u2014 generated by "nodewarden --install-service".
+[Unit]
+Description=NodeWarden Local password vault (Bitwarden-compatible)
+Documentation=https://github.com/guimoyun/nodewarden-WL
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=${execPath}
+Restart=always
+RestartSec=3
+EnvironmentFile=${envFile}
+Environment=NODEWARDEN_DATA_DIR=${config.dataDir}
+Environment=NODEWARDEN_DIST_DIR=${config.distDir}
+Environment=HOST=${config.host}
+Environment=PORT=${config.port}
+LimitNOFILE=65536
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+`;
+}
+function openrcScript(config, execPath, envFile) {
+  return `#!/sbin/openrc-run
+# NodeWarden Local \u2014 generated by "nodewarden --install-service".
+name="NodeWarden Local password vault"
+description="Bitwarden-compatible password vault (standalone)"
+command="${execPath}"
+command_background=true
+pidfile="/run/nodewarden.pid"
+command_user="root"
+rc_ulimit="-n 65536"
+
+: "\${JWT_SECRET:=}"
+if [ -f "${envFile}" ]; then
+  . "${envFile}"
+fi
+export JWT_SECRET
+export NODEWARDEN_DATA_DIR="${config.dataDir}"
+export NODEWARDEN_DIST_DIR="${config.distDir}"
+export HOST="${config.host}"
+export PORT="${config.port}"
+
+depend() {
+  need net
+  after firewall
+}
+`;
+}
+function installService(config) {
+  const prefix = process.env.NODEWARDEN_SERVICE_PREFIX || "";
+  const init = detectInitSystem();
+  if (prefix === "" && !isRoot()) {
+    return { ok: false, init, message: "\u9700\u8981 root \u6743\u9650\uFF1A\u8BF7\u7528 sudo \u6267\u884C\uFF08sudo ./nodewarden-linux-x64 --install-service\uFF09", unitPath: "" };
+  }
+  if (init === "unknown") {
+    return {
+      ok: false,
+      init,
+      message: "\u65E0\u6CD5\u8BC6\u522B\u7CFB\u7EDF\u670D\u52A1\u7BA1\u7406\u5668\uFF08\u672A\u68C0\u6D4B\u5230 systemd \u6216 Alpine OpenRC\uFF09\u3002\u672C\u7A0B\u5E8F\u652F\u6301 Debian/Ubuntu\uFF08systemd\uFF09\u4E0E Alpine Linux\uFF08OpenRC\uFF09\u3002\u5176\u5B83\u53D1\u884C\u7248\u8BF7\u624B\u52A8\u914D\u7F6E\u3002",
+      unitPath: ""
+    };
+  }
+  const execPath = process.execPath;
+  const { path: envFile, jwtSecret } = ensureSecretFile(prefix, config);
+  void jwtSecret;
+  if (init === "systemd") {
+    const unitDir = `${prefix}/etc/systemd/system`;
+    (0, import_node_fs6.mkdirSync)(unitDir, { recursive: true });
+    const unitPath2 = `${unitDir}/${SERVICE_NAME}.service`;
+    (0, import_node_fs6.writeFileSync)(unitPath2, systemdUnit(config, execPath, envFile), { mode: 420 });
+    if (prefix === "") {
+      (0, import_node_child_process2.execFileSync)("systemctl", ["daemon-reload"]);
+      (0, import_node_child_process2.execFileSync)("systemctl", ["enable", SERVICE_NAME]);
+      (0, import_node_child_process2.execFileSync)("systemctl", ["restart", SERVICE_NAME]);
+    }
+    return {
+      ok: true,
+      init,
+      message: `\u5DF2\u5B89\u88C5 systemd \u670D\u52A1 ${SERVICE_NAME} \u5E76\u542F\u52A8\u3002\u7BA1\u7406\u547D\u4EE4\uFF1Asystemctl status ${SERVICE_NAME} / journalctl -u ${SERVICE_NAME} -f`,
+      unitPath: unitPath2
+    };
+  }
+  const initDir = `${prefix}/etc/init.d`;
+  (0, import_node_fs6.mkdirSync)(initDir, { recursive: true });
+  const unitPath = `${initDir}/${SERVICE_NAME}`;
+  (0, import_node_fs6.writeFileSync)(unitPath, openrcScript(config, execPath, envFile), { mode: 493 });
+  (0, import_node_fs6.chmodSync)(unitPath, 493);
+  if (prefix === "") {
+    (0, import_node_child_process2.execFileSync)("rc-update", ["add", SERVICE_NAME, "default"]);
+    (0, import_node_child_process2.execFileSync)("rc-service", [SERVICE_NAME, "start"]);
+  }
+  return {
+    ok: true,
+    init,
+    message: `\u5DF2\u5B89\u88C5 OpenRC \u670D\u52A1 ${SERVICE_NAME} \u5E76\u542F\u52A8\uFF08\u5F00\u673A\u81EA\u542F\uFF09\u3002\u7BA1\u7406\u547D\u4EE4\uFF1Arc-service ${SERVICE_NAME} status`,
+    unitPath
+  };
+}
+function uninstallService(config) {
+  void config;
+  const prefix = process.env.NODEWARDEN_SERVICE_PREFIX || "";
+  const init = detectInitSystem();
+  if (prefix === "" && !isRoot()) {
+    return { ok: false, init, message: "\u9700\u8981 root \u6743\u9650\uFF1A\u8BF7\u7528 sudo \u6267\u884C\uFF08sudo ./nodewarden-linux-x64 --uninstall-service\uFF09" };
+  }
+  try {
+    if (init === "systemd") {
+      if (prefix === "") {
+        (0, import_node_child_process2.execFileSync)("systemctl", ["stop", SERVICE_NAME]);
+        (0, import_node_child_process2.execFileSync)("systemctl", ["disable", SERVICE_NAME]);
+      }
+      (0, import_node_fs6.rmSync)(`${prefix}/etc/systemd/system/${SERVICE_NAME}.service`, { force: true });
+      if (prefix === "") (0, import_node_child_process2.execFileSync)("systemctl", ["daemon-reload"]);
+      return { ok: true, init, message: `\u5DF2\u5378\u8F7D systemd \u670D\u52A1 ${SERVICE_NAME}` };
+    }
+    if (init === "openrc") {
+      if (prefix === "") {
+        (0, import_node_child_process2.execFileSync)("rc-service", [SERVICE_NAME, "stop"]);
+        (0, import_node_child_process2.execFileSync)("rc-update", ["del", SERVICE_NAME]);
+      }
+      (0, import_node_fs6.rmSync)(`${prefix}/etc/init.d/${SERVICE_NAME}`, { force: true });
+      return { ok: true, init, message: `\u5DF2\u5378\u8F7D OpenRC \u670D\u52A1 ${SERVICE_NAME}` };
+    }
+    return { ok: false, init, message: "\u672A\u68C0\u6D4B\u5230 systemd \u6216 OpenRC\uFF0C\u65E0\u9700\u5378\u8F7D" };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return { ok: false, init, message: `\u5378\u8F7D\u5931\u8D25\uFF1A${msg}` };
+  }
+}
+function printHelp() {
+  console.log(`NodeWarden Local \u2014 Bitwarden \u517C\u5BB9\u5BC6\u7801\u5E93\uFF08\u72EC\u7ACB\u53EF\u6267\u884C\u7248\uFF09
+
+\u7528\u6CD5:
+  ./nodewarden-<platform>                     \u542F\u52A8 Web Vault\uFF08\u9ED8\u8BA4 0.0.0.0:8787\uFF09
+  ./nodewarden-<platform> --install-service   \u4E00\u952E\u6CE8\u518C\u7CFB\u7EDF\u670D\u52A1\uFF08Debian/Ubuntu \u2192 systemd\uFF1BAlpine \u2192 OpenRC\uFF09
+  ./nodewarden-<platform> --uninstall-service \u5378\u8F7D\u7CFB\u7EDF\u670D\u52A1
+  ./nodewarden-<platform> --help              \u663E\u793A\u672C\u5E2E\u52A9
+
+\u73AF\u5883\u53D8\u91CF:
+  JWT_SECRET              \u5FC5\u586B\u7B7E\u540D\u5BC6\u94A5\uFF08\u226532 \u5B57\u7B26\uFF09\uFF1B--install-service \u65F6\u4F1A\u81EA\u52A8\u751F\u6210\u5E76\u4FDD\u5B58\u5230 /etc/nodewarden.env
+  NODEWARDEN_DATA_DIR     \u6570\u636E\u76EE\u5F55\uFF08\u5BC6\u7801\u5E93 SQLite \u6240\u5728\uFF09\uFF0C\u9ED8\u8BA4 ./nw-data
+  NODEWARDEN_DIST_DIR     Web Vault \u524D\u7AEF\u8D44\u6E90\u76EE\u5F55\uFF0C\u9ED8\u8BA4 ./dist
+  HOST / PORT             \u76D1\u542C\u5730\u5740\u4E0E\u7AEF\u53E3\uFF0C\u9ED8\u8BA4 0.0.0.0 / 8787
+`);
+}
+
 // local/index.ts
 var BACKUP_INTERVAL_MS = 5 * 60 * 1e3;
 var REMOTE_SYNC_CHECK_INTERVAL_MS = 60 * 1e3;
+function handleServiceCli() {
+  const args = process.argv.slice(2);
+  if (args.includes("--help") || args.includes("-h") || args.includes("help")) {
+    printHelp();
+    return "exit";
+  }
+  if (args.includes("--install-service")) {
+    if (!process.env.JWT_SECRET && !process.env.NODEWARDEN_ALLOW_INSECURE_JWT) {
+      process.env.NODEWARDEN_ALLOW_INSECURE_JWT = "1";
+    }
+    const config = parseLocalConfig();
+    const outcome = installService(config);
+    console.log(`[nodewarden-local] ${outcome.message}`);
+    if (!outcome.ok) {
+      console.log(`[nodewarden-local] \u68C0\u6D4B\u5230 init \u7CFB\u7EDF: ${outcome.init}`);
+      process.exit(1);
+    }
+    return "exit";
+  }
+  if (args.includes("--uninstall-service")) {
+    if (!process.env.JWT_SECRET && !process.env.NODEWARDEN_ALLOW_INSECURE_JWT) {
+      process.env.NODEWARDEN_ALLOW_INSECURE_JWT = "1";
+    }
+    const config = parseLocalConfig();
+    const outcome = uninstallService(config);
+    console.log(`[nodewarden-local] ${outcome.message}`);
+    process.exit(outcome.ok ? 0 : 1);
+    return "exit";
+  }
+  return "start";
+}
 async function main() {
+  if (handleServiceCli() === "exit") {
+    process.exit(0);
+  }
   globalThis.__NODEWARDEN_LOCAL__ = true;
   installLocalCaches();
   const config = parseLocalConfig();

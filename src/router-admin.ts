@@ -14,6 +14,7 @@ import {
 } from './handlers/admin';
 import { handleAdminBackupRoute } from './router-admin-backup';
 import { handleAdminRemoteSyncRoute } from './router-admin-remote-sync';
+import { handleAdminUpdateRoute } from './handlers/update-admin';
 import { errorResponse } from './utils/response';
 
 function isKnownAdminPath(path: string): boolean {
@@ -24,6 +25,7 @@ function isKnownAdminPath(path: string): boolean {
     path === '/api/admin/invites' ||
     path.startsWith('/api/admin/backup') ||
     path.startsWith('/api/admin/remote-sync') ||
+    path.startsWith('/api/admin/update') ||
     /^\/api\/admin\/invites\/[^/]+$/i.test(path) ||
     /^\/api\/admin\/users\/[a-f0-9-]+(?:\/status)?$/i.test(path)
   );
@@ -70,6 +72,9 @@ export async function handleAdminRoute(
 
   const adminRemoteSyncResponse = await handleAdminRemoteSyncRoute(request, env, actorUser, path, method);
   if (adminRemoteSyncResponse) return adminRemoteSyncResponse;
+
+  const adminUpdateResponse = await handleAdminUpdateRoute(request, env, actorUser);
+  if (adminUpdateResponse) return adminUpdateResponse;
 
   if (path === '/api/admin/invites') {
     if (method === 'GET') return handleAdminListInvites(request, env, actorUser);

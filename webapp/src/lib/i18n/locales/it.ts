@@ -1500,6 +1500,25 @@ Object.assign(it, {
   "txt_remote_sync_delete_failed": "Impossibile rimuovere la fonte di sincronizzazione.",
   "txt_never": "Mai",
 
+
+  "nav_update": "Aggiorna",
+  "txt_update_title": "Aggiornamento con un clic",
+  "txt_update_desc": "Controlla GitHub Releases e sostituisce automaticamente l'eseguibile e le risorse Web Vault.",
+  "txt_update_source": "Sorgente aggiornamenti: {source}",
+  "txt_update_check": "Controlla aggiornamenti",
+  "txt_update_checking": "Controllo…",
+  "txt_update_current": "Versione corrente",
+  "txt_update_latest": "Ultima versione",
+  "txt_update_platform": "Piattaforma",
+  "txt_update_package": "Pacchetto",
+  "txt_update_notes": "Note di rilascio",
+  "txt_update_apply": "Aggiorna ora",
+  "txt_update_applying": "Download e applicazione…",
+  "txt_update_manual": "Download manuale",
+  "txt_update_hint": "Fai clic su «Controlla aggiornamenti» per vedere se è disponibile una versione nuova.",
+  "txt_update_up_to_date": "Hai già l'ultima versione ({version}).",
+  "txt_update_check_failed": "Controllo aggiornamenti non riuscito",
+  "txt_update_apply_failed": "Applicazione aggiornamento non riuscita",
 });
 
 Object.assign(it, { "txt_password_security_last_checked": "Ultimo controllo: {value}" });

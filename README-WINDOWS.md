@@ -54,6 +54,21 @@ nodewarden.exe
 `attachments\`（附件）。**备份 = 停止服务后复制整个数据目录**；也可在 Web Vault 里配置
 WebDAV/S3 云备份。
 
+## 一键更新
+
+登录 Web Vault 后进入 **程序设置 → 一键更新**（管理员可见）：
+
+1. 点击「检查更新」查看当前版本与 GitHub Releases 最新版本；
+2. 有新版本时点击「一键更新」：
+   - 后端下载 `nodewarden-win-x64.zip` 等对应平台包；
+   - 自动执行 `taskkill` 结束旧进程 → 覆盖 `dist\` 前端资源 → 替换 `nodewarden.exe` → 重新启动；
+   - 期间页面会提示"正在下载并应用更新…"，完成后程序自动重启，重新打开页面即可看到新版本；
+3. 更新源：https://github.com/guimoyun/nodewarden-WL/releases ；也提供「手动下载」链接。
+
+> 提示：一键更新需要服务器/本机能访问 GitHub（api.github.com 与下载域名）。
+> 如遇限流，可在启动脚本中设置 `set NODEWARDEN_UPDATE_TOKEN=你的GitHubToken`；
+> 下载慢可设置 `set NODEWARDEN_UPDATE_MIRROR=https://ghproxy.com/`。
+
 ## 已知说明
 
 - 首次运行 Windows SmartScreen 可能提示"未知发布者"——这是 SEA 注入导致签名失效的正常现象，
