@@ -9,8 +9,7 @@ interface JwtWarningPageProps {
   minLength: number;
 }
 
-const CLOUDFLARE_SETTINGS_URL =
-  'https://dash.cloudflare.com/?to=/:account/workers/services/view/nodewarden/production/settings';
+const JWT_SETTINGS_URL = 'https://github.com/guimoyun/nodewarden-WL/blob/main/README-LOCAL.md';
 
 export default function JwtWarningPage(props: JwtWarningPageProps) {
   const [seed, setSeed] = useState(0);
@@ -48,7 +47,7 @@ export default function JwtWarningPage(props: JwtWarningPageProps) {
             <li>
               {fixStep2Prefix}
               <a
-                href={CLOUDFLARE_SETTINGS_URL}
+                href={JWT_SETTINGS_URL}
                 className="jwt-inline-link"
                 target="_blank"
                 rel="noreferrer"
