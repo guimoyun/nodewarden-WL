@@ -14,6 +14,7 @@ export interface RemoteSyncSourceRecord {
     ok?: boolean;
     added?: number;
     updated?: number;
+    skipped?: number;
     folders?: number;
     attachments?: number;
     attachmentsDownloaded?: number;
@@ -29,6 +30,7 @@ export interface RemoteSyncSourceResponse extends RemoteSyncSourceRecord {
     ok: boolean;
     added: number;
     updated: number;
+    skipped: number;
     folders: number;
     attachments: number;
     attachmentsDownloaded: number;

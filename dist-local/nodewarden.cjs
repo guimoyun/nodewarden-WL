@@ -38403,6 +38403,10 @@ async function handleAdminBackupRoute(request, env, actorUser, path5, method) {
 var SYNC_DEVICE_TYPE = "14";
 var SYNC_DEVICE_NAME = "NodeWarden Sync";
 var DEFAULT_KDF_ITERATIONS = 6e5;
+function parseTs(value) {
+  const n = typeof value === "string" ? Date.parse(value) : NaN;
+  return Number.isFinite(n) ? n : 0;
+}
 async function deriveSecretKey(env) {
   const digest2 = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(env.JWT_SECRET));
   return crypto.subtle.importKey("raw", digest2, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
@@ -38604,6 +38608,8 @@ function normalizeRemoteFolderId(value) {
 }
 function buildLocalCipher(remoteCipher, userId) {
   const now = (/* @__PURE__ */ new Date()).toISOString();
+  const remoteUpdatedAt = remoteCipher.revisionDate ?? remoteCipher.updatedAt ?? null;
+  const remoteCreatedAt = remoteCipher.creationDate ?? remoteCipher.createdAt ?? null;
   const remoteDeleted = remoteCipher.deletedDate ?? remoteCipher.deletedAt ?? null;
   const remoteArchived = remoteCipher.archivedAt ?? remoteCipher.archivedDate ?? null;
   const cipher = {
@@ -38624,13 +38630,15 @@ function buildLocalCipher(remoteCipher, userId) {
     passwordHistory: remoteCipher.passwordHistory ?? null,
     reprompt: Number(remoteCipher.reprompt) || 0,
     key: remoteCipher.key ?? null,
-    createdAt: remoteCipher.createdAt || now,
-    updatedAt: remoteCipher.updatedAt || now,
+    createdAt: remoteCreatedAt || now,
+    updatedAt: remoteUpdatedAt || now,
     archivedAt: remoteDeleted ? null : remoteArchived ?? null,
     deletedAt: remoteDeleted ?? null
   };
   delete cipher.deletedDate;
   delete cipher.archivedDate;
+  delete cipher.revisionDate;
+  delete cipher.creationDate;
   return cipher;
 }
 async function downloadRemoteAttachment(url, accessToken, cipherId, attachment, env, warnings) {
@@ -38662,6 +38670,7 @@ async function synchronizeRemoteSourceById(env, sourceId, options) {
     ok: false,
     added: 0,
     updated: 0,
+    skipped: 0,
     folders: 0,
     attachments: 0,
     attachmentsDownloaded: 0,
@@ -38695,6 +38704,11 @@ async function synchronizeRemoteSourceById(env, sourceId, options) {
       for (const folder of syncData.folders ?? []) {
         const folderId = String(folder.id || "");
         if (!folderId) continue;
+        const remoteUpdatedAt = parseTs(folder.revisionDate);
+        const existingFolder = await storage.getFolder(folderId);
+        if (existingFolder && parseTs(existingFolder.updatedAt) >= remoteUpdatedAt) {
+          continue;
+        }
         const localFolder = {
           id: folderId,
           userId: user.id,
@@ -38709,6 +38723,10 @@ async function synchronizeRemoteSourceById(env, sourceId, options) {
         const localCipher = buildLocalCipher(remoteCipher, user.id);
         const existing = await storage.getCipherForUser(localCipher.id, user.id);
         if (existing) {
+          if (parseTs(localCipher.updatedAt) <= parseTs(existing.updatedAt)) {
+            result.skipped += 1;
+            continue;
+          }
           result.updated += 1;
         } else {
           result.added += 1;
@@ -38743,6 +38761,7 @@ async function synchronizeRemoteSourceById(env, sourceId, options) {
         ok: true,
         added: result.added,
         updated: result.updated,
+        skipped: result.skipped,
         folders: result.folders,
         attachments: result.attachments,
         attachmentsDownloaded: result.attachmentsDownloaded,
@@ -38895,6 +38914,7 @@ async function handleCreateRemoteSyncSource(request, env, actorUser) {
           ok: result.ok,
           added: result.added,
           updated: result.updated,
+          skipped: result.skipped,
           folders: result.folders,
           attachments: result.attachments,
           attachmentsDownloaded: result.attachmentsDownloaded,
@@ -38936,6 +38956,7 @@ async function handleUpdateRemoteSyncSource(request, env, actorUser, sourceId) {
           ok: outcome.result.ok,
           added: outcome.result.added,
           updated: outcome.result.updated,
+          skipped: outcome.result.skipped,
           folders: outcome.result.folders,
           attachments: outcome.result.attachments,
           attachmentsDownloaded: outcome.result.attachmentsDownloaded,
@@ -38978,6 +38999,7 @@ async function handleTriggerRemoteSyncSource(request, env, actorUser, sourceId) 
         ok: outcome.result.ok,
         added: outcome.result.added,
         updated: outcome.result.updated,
+        skipped: outcome.result.skipped,
         folders: outcome.result.folders,
         attachments: outcome.result.attachments,
         attachmentsDownloaded: outcome.result.attachmentsDownloaded,

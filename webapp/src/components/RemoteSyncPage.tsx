@@ -45,7 +45,7 @@ export default function RemoteSyncPage(props: RemoteSyncPageProps): JSX.Element 
   const [intervalMinutes, setIntervalMinutes] = useState(60);
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
-  const [addResult, setAddResult] = useState<{ ok: boolean; added: number; updated: number; warnings: string[]; error: string | null } | null>(null);
+  const [addResult, setAddResult] = useState<{ ok: boolean; added: number; updated: number; skipped: number; warnings: string[]; error: string | null } | null>(null);
 
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -88,6 +88,7 @@ export default function RemoteSyncPage(props: RemoteSyncPageProps): JSX.Element 
         ok: created.syncResult?.ok ?? false,
         added: created.syncResult?.added ?? 0,
         updated: created.syncResult?.updated ?? 0,
+        skipped: created.syncResult?.skipped ?? 0,
         warnings: created.syncResult?.warnings ?? [],
         error: created.syncResult?.error ?? null,
       });
@@ -210,7 +211,7 @@ export default function RemoteSyncPage(props: RemoteSyncPageProps): JSX.Element 
           {!!addResult && (
             <div className={`local-note ${addResult.ok ? 'local-note-success' : 'local-note-warn'}`}>
               {addResult.ok
-                ? t('txt_remote_sync_result_ok', { added: String(addResult.added), updated: String(addResult.updated) })
+                ? t('txt_remote_sync_result_ok', { added: String(addResult.added), updated: String(addResult.updated), skipped: String(addResult.skipped) })
                 : t('txt_remote_sync_result_error', { error: addResult.error || '' })}
               {addResult.warnings.map((warning) => (
                 <div key={warning} className="muted-inline">{warning}</div>
@@ -266,6 +267,7 @@ export default function RemoteSyncPage(props: RemoteSyncPageProps): JSX.Element 
                     {t('txt_remote_sync_stats', {
                       added: String(last.added ?? 0),
                       updated: String(last.updated ?? 0),
+                      skipped: String(last.skipped ?? 0),
                       folders: String(last.folders ?? 0),
                     })}
                   </small>

@@ -35,7 +35,7 @@ async function postJson(url: string, body: unknown, token?: string): Promise<{ s
   return { status: resp.status, json };
 }
 
-async function registerUser(base: string, email: string, password: string): Promise<string> {
+async function registerUser(base: string, email: string, password: string, inviteCode?: string): Promise<string> {
   const hash = await computeMasterPasswordHash(password, email, ITER);
   const { status, json } = await postJson(`${base}/api/accounts/register`, {
     email,
@@ -45,11 +45,22 @@ async function registerUser(base: string, email: string, password: string): Prom
     kdf: 0,
     kdfIterations: ITER,
     keys: { publicKey: 'cHVibGljLWtleQ==', encryptedPrivateKey: '2.aWl2|Y2lwaGVydGV4dA==' },
+    ...(inviteCode ? { inviteCode } : {}),
   });
   if (status !== 200 && status !== 201) {
     throw new Error(`register ${email} failed: ${status} ${JSON.stringify(json)}`);
   }
   return hash;
+}
+
+async function createInvite(base: string, adminToken: string, adminPasswordHash: string): Promise<string> {
+  const { status, json } = await postJson(
+    `${base}/api/admin/invites`,
+    { masterPasswordHash: adminPasswordHash, expiresInHours: 24 },
+    adminToken
+  );
+  if (status !== 201) throw new Error(`create invite on ${base} failed: ${status} ${JSON.stringify(json)}`);
+  return String(json.code);
 }
 
 async function login(base: string, email: string, passwordHash: string): Promise<string> {
@@ -97,16 +108,21 @@ async function createCipher(base: string, token: string, name: string, username:
 }
 
 async function main(): Promise<void> {
-  console.log('[1] Register remote user on A and create 2 ciphers');
-  const remoteHash = await registerUser(A, REMOTE_EMAIL, REMOTE_PASS);
+  console.log('[0] Register admin on A (first user) and create invite for the remote user');
+  const adminHash = await registerUser(A, ADMIN_EMAIL, ADMIN_PASS);
+  const aAdminToken = await login(A, ADMIN_EMAIL, adminHash);
+  const inviteCode = await createInvite(A, aAdminToken, adminHash);
+
+  console.log('[1] Register remote user on A (via invite) and create 2 ciphers');
+  const remoteHash = await registerUser(A, REMOTE_EMAIL, REMOTE_PASS, inviteCode);
   const aToken = await login(A, REMOTE_EMAIL, remoteHash);
   await createCipher(A, aToken, 'site-one', 'user1');
   await createCipher(A, aToken, 'site-two', 'user2');
   console.log('  created on A');
 
   console.log('[2] Register admin on B');
-  const adminHash = await registerUser(B, ADMIN_EMAIL, ADMIN_PASS);
-  const bAdminToken = await login(B, ADMIN_EMAIL, adminHash);
+  const bAdminHash = await registerUser(B, ADMIN_EMAIL, ADMIN_PASS);
+  const bAdminToken = await login(B, ADMIN_EMAIL, bAdminHash);
   console.log('  admin ready');
 
   console.log('[3] Add remote sync source on B (admin API)');
@@ -142,9 +158,12 @@ async function main(): Promise<void> {
   const trigger = await postJson(`${B}/api/admin/remote-sync/${sourceId}/trigger`, {}, bAdminToken);
   assert(trigger.json?.syncResult?.added === 1, `trigger added 1 (got ${JSON.stringify(trigger.json?.syncResult)})`);
 
-  console.log('[6] Re-sync is idempotent (no duplicates)');
+  console.log('[6] Re-sync is idempotent (no duplicates, no overwrite)');
   const trigger2 = await postJson(`${B}/api/admin/remote-sync/${sourceId}/trigger`, {}, bAdminToken);
-  assert(trigger2.json?.syncResult?.added === 0 && trigger2.json?.syncResult?.updated === 3, `second sync: added=0 updated=3 (got ${JSON.stringify(trigger2.json?.syncResult)})`);
+  assert(
+    trigger2.json?.syncResult?.added === 0 && trigger2.json?.syncResult?.updated === 0 && trigger2.json?.syncResult?.skipped === 3,
+    `second sync: added=0 updated=0 skipped=3 (got ${JSON.stringify(trigger2.json?.syncResult)})`
+  );
 
   console.log('[7] Bad credentials rejected with clear error');
   const badResp = await postJson(

@@ -7,6 +7,12 @@
 // mirrors them into the LOCAL vault so the same account/master-password can see
 // the same entries across multiple nodes.
 //
+// Multi-master redundancy: several nodes may point at each other as sync
+// sources. Because sync is pull-based (no push/queue), cycles converge rather
+// than loop: every merge is idempotent (equal timestamps are skipped) and
+// conflicts resolve by last-write-wins on the item's updatedAt/revisionDate, so
+// the newest writer's version of an entry eventually reaches every node.
+//
 // Security notes:
 // - The remote master-password-derived login hash is stored AES-256-GCM
 //   encrypted with a key derived from JWT_SECRET. The plaintext master password
@@ -30,6 +36,7 @@ export interface RemoteSyncResult {
   ok: boolean;
   added: number;
   updated: number;
+  skipped: number;
   folders: number;
   attachments: number;
   attachmentsDownloaded: number;
@@ -40,6 +47,11 @@ export interface RemoteSyncResult {
   remoteUrl: string;
   remoteEmail: string;
   localUserId: string | null;
+}
+
+function parseTs(value: unknown): number {
+  const n = typeof value === 'string' ? Date.parse(value) : NaN;
+  return Number.isFinite(n) ? n : 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -307,6 +319,12 @@ function normalizeRemoteFolderId(value: unknown): string | null {
 
 function buildLocalCipher(remoteCipher: any, userId: string): Cipher {
   const now = new Date().toISOString();
+  // Bitwarden sync payloads use revisionDate/creationDate (NodeWarden/Bitwarden
+  // wire format); some clients expose updatedAt/createdAt. Falling back to `now`
+  // would make every sync look like a newer write and clobber local edits, so
+  // only fall back when the payload really has no timestamp at all.
+  const remoteUpdatedAt = remoteCipher.revisionDate ?? remoteCipher.updatedAt ?? null;
+  const remoteCreatedAt = remoteCipher.creationDate ?? remoteCipher.createdAt ?? null;
   const remoteDeleted = remoteCipher.deletedDate ?? remoteCipher.deletedAt ?? null;
   const remoteArchived = remoteCipher.archivedAt ?? remoteCipher.archivedDate ?? null;
   const cipher = {
@@ -327,13 +345,15 @@ function buildLocalCipher(remoteCipher: any, userId: string): Cipher {
     passwordHistory: remoteCipher.passwordHistory ?? null,
     reprompt: Number(remoteCipher.reprompt) || 0,
     key: remoteCipher.key ?? null,
-    createdAt: remoteCipher.createdAt || now,
-    updatedAt: remoteCipher.updatedAt || now,
+    createdAt: remoteCreatedAt || now,
+    updatedAt: remoteUpdatedAt || now,
     archivedAt: remoteDeleted ? null : (remoteArchived ?? null),
     deletedAt: remoteDeleted ?? null,
   } as Cipher;
   delete (cipher as any).deletedDate;
   delete (cipher as any).archivedDate;
+  delete (cipher as any).revisionDate;
+  delete (cipher as any).creationDate;
   return cipher;
 }
 
@@ -379,6 +399,7 @@ export async function synchronizeRemoteSourceById(
     ok: false,
     added: 0,
     updated: 0,
+    skipped: 0,
     folders: 0,
     attachments: 0,
     attachmentsDownloaded: 0,
@@ -415,9 +436,17 @@ export async function synchronizeRemoteSourceById(
 
     if (dataSyncAllowed) {
       // Folders (names are encrypted strings; stored verbatim).
+      // Multi-master: last-write-wins by revisionDate — a folder that is newer
+      // locally is kept, an equal timestamp is skipped (idempotent), so two
+      // nodes pointing at each other converge instead of overwriting each other.
       for (const folder of syncData.folders ?? []) {
         const folderId = String(folder.id || '');
         if (!folderId) continue;
+        const remoteUpdatedAt = parseTs(folder.revisionDate);
+        const existingFolder = await storage.getFolder(folderId);
+        if (existingFolder && parseTs(existingFolder.updatedAt) >= remoteUpdatedAt) {
+          continue; // local folder is same or newer
+        }
         const localFolder: Folder = {
           id: folderId,
           userId: user.id,
@@ -429,11 +458,21 @@ export async function synchronizeRemoteSourceById(
         result.folders += 1;
       }
 
-      // Ciphers.
+      // Ciphers — multi-master last-write-wins by updatedAt:
+      //   - not present locally          → add
+      //   - remote newer than local      → overwrite (updated)
+      //   - remote same age or older     → skip (idempotent; keeps local edits)
+      // Deletion/archival is just a state change on the same timestamp clock, so
+      // a newer remote delete wins, and a newer local restore/edit beats an
+      // older remote delete.
       for (const remoteCipher of syncData.ciphers ?? []) {
         const localCipher = buildLocalCipher(remoteCipher, user.id);
         const existing = await storage.getCipherForUser(localCipher.id, user.id);
         if (existing) {
+          if (parseTs(localCipher.updatedAt) <= parseTs(existing.updatedAt)) {
+            result.skipped += 1;
+            continue; // local entry is same or newer — never clobber it
+          }
           result.updated += 1;
         } else {
           result.added += 1;
@@ -473,6 +512,7 @@ export async function synchronizeRemoteSourceById(
         ok: true,
         added: result.added,
         updated: result.updated,
+        skipped: result.skipped,
         folders: result.folders,
         attachments: result.attachments,
         attachmentsDownloaded: result.attachmentsDownloaded,
